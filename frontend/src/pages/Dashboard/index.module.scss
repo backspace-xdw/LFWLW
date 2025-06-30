@@ -1,0 +1,28 @@
+.dashboard {
+  .statCard {
+    height: 100%;
+    transition: all 0.3s;
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .alarmBadges {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+    }
+  }
+  
+  .chartCard {
+    height: 100%;
+    
+    .healthScore {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 0;
+    }
+  }
+}

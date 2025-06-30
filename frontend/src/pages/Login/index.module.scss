@@ -1,0 +1,137 @@
+.loginContainer {
+  display: flex;
+  height: 100vh;
+  background: #f0f2f5;
+}
+
+.loginBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  
+  @media (max-width: 768px) {
+    flex: 1;
+  }
+}
+
+.loginHeader {
+  text-align: center;
+  margin-bottom: 40px;
+  
+  .logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+  }
+  
+  .title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+  }
+  
+  .subtitle {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.loginForm {
+  width: 100%;
+  max-width: 400px;
+  
+  .forgotPassword {
+    float: right;
+    color: #4A90E2;
+    
+    &:hover {
+      color: #357ABD;
+    }
+  }
+}
+
+.loginFooter {
+  margin-top: 40px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+.loginBanner {
+  flex: 1;
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: rotate 30s linear infinite;
+  }
+  
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+.bannerContent {
+  position: relative;
+  color: white;
+  text-align: center;
+  padding: 0 40px;
+  
+  h2 {
+    font-size: 36px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    font-size: 18px;
+    margin-bottom: 40px;
+    opacity: 0.9;
+  }
+  
+  .features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+    li {
+      font-size: 16px;
+      margin: 12px 0;
+      padding-left: 24px;
+      position: relative;
+      
+      &::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+      }
+    }
+  }
+}

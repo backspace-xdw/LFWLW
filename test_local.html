@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>本地系统测试</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .status { padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        code { background: #e0e0e0; padding: 2px 5px; }
+    </style>
+</head>
+<body>
+    <h1>LFWLW 物联网平台 - 本地测试</h1>
+    
+    <div class="status success">
+        <h2>✅ 系统运行状态</h2>
+        <ul>
+            <li><strong>前端服务：</strong>运行在 http://localhost:50000</li>
+            <li><strong>后端服务：</strong>运行在 http://localhost:50001</li>
+            <li><strong>API代理：</strong>已配置，/api → /api/v1</li>
+        </ul>
+    </div>
+    
+    <div class="status success">
+        <h2>✅ 访问方式</h2>
+        <ol>
+            <li>打开浏览器访问：<a href="http://localhost:50000" target="_blank">http://localhost:50000</a></li>
+            <li>使用账号登录：
+                <ul>
+                    <li>用户名：<code>admin</code></li>
+                    <li>密码：<code>admin123</code></li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+    
+    <div class="status success">
+        <h2>✅ 功能测试清单</h2>
+        <ul>
+            <li>✓ 用户登录功能</li>
+            <li>✓ 仪表板实时数据</li>
+            <li>✓ 设备管理（增删改查）</li>
+            <li>✓ WebSocket实时通信</li>
+            <li>✓ 告警推送（每30秒模拟）</li>
+        </ul>
+    </div>
+    
+    <div class="status">
+        <h2>💡 注意事项</h2>
+        <ul>
+            <li>确保使用 <code>localhost:50000</code> 访问，不要使用 IP 地址</li>
+            <li>系统处于开发模式，包含调试信息</li>
+            <li>后端模拟数据每秒更新</li>
+            <li>告警随机生成用于测试</li>
+        </ul>
+    </div>
+</body>
+</html>

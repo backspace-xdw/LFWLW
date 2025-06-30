@@ -1,0 +1,28 @@
+import { Router } from 'express'
+import authRoutes from './auth.routes'
+import deviceRoutes from './device.routes'
+import dataRoutes from './data.routes'
+import alarmRoutes from './alarm.routes'
+import userRoutes from './user.routes'
+
+const router = Router()
+
+// Public routes
+router.use('/auth', authRoutes)
+
+// Protected routes (add auth middleware later)
+router.use('/devices', deviceRoutes)
+router.use('/data', dataRoutes)
+router.use('/alarms', alarmRoutes)
+router.use('/users', userRoutes)
+
+// Default route
+router.get('/', (req, res) => {
+  res.json({
+    message: 'LFWLW IoT Platform API v1',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+  })
+})
+
+export default router

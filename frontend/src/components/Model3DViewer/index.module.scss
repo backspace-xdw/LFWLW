@@ -1,0 +1,76 @@
+.viewer {
+  height: 100%;
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .controls {
+    padding: 16px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .viewerContainer {
+    position: relative;
+    width: 100%;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .canvas {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  .loadingOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 10;
+  }
+
+  .error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 400px;
+    z-index: 10;
+  }
+
+  .instructions {
+    text-align: center;
+    padding: 8px;
+    background-color: #fafafa;
+    border-top: 1px solid #e8e8e8;
+  }
+}
+
+// Fullscreen styles
+:fullscreen {
+  .viewer {
+    height: 100vh;
+    margin: 0;
+    
+    .viewerContainer {
+      height: calc(100vh - 200px) !important;
+    }
+  }
+}

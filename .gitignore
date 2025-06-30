@@ -1,0 +1,78 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output
+
+# Production
+dist/
+build/
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Environment files - IMPORTANT: Never commit with hardcoded URLs!
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+Thumbs.db
+
+# Uploads
+uploads/
+temp/
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Cache
+.eslintcache
+.cache/
+
+# Backend specific
+backend/backend_restart.log
+backend/uploads/
+backend/temp/
+
+# Frontend specific
+frontend/.vite/
+frontend/dist-ssr/
+
+# Public model files (too large)
+frontend/public/models/*.fbx
+frontend/public/models/*.obj
+frontend/public/models/*.gltf
+frontend/public/models/*.glb
+!frontend/public/models/README.md
+!frontend/public/models/.gitkeep
+frontend/public/models/*.json
+
+# Keep thumbnails
+!frontend/public/models/thumbnails/

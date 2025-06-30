@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API调试页面</title>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: monospace; 
+            padding: 20px; 
+            background: #1e1e1e; 
+            color: #d4d4d4;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #2d2d2d;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border: 1px solid #3e3e3e;
+        }
+        h2 { color: #569cd6; }
+        .success { color: #4ec9b0; }
+        .error { color: #f44747; }
+        .warning { color: #ce9178; }
+        code {
+            background: #1e1e1e;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        pre {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #1e1e1e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 API调试页面</h1>
+        
+        <div class="section">
+            <h2>当前访问信息</h2>
+            <p>页面URL: <code id="pageUrl"></code></p>
+            <p>主机: <code id="host"></code></p>
+            <p>协议: <code id="protocol"></code></p>
+        </div>
+        
+        <div class="section">
+            <h2>API测试</h2>
+            <button onclick="testRelativeAPI()">测试相对路径API</button>
+            <button onclick="testAbsoluteAPI()">测试绝对路径API</button>
+            <button onclick="testProxyAPI()">测试代理路径API</button>
+            <div id="apiResults"></div>
+        </div>
+        
+        <div class="section">
+            <h2>登录测试</h2>
+            <button onclick="testLogin()">测试登录（相对路径）</button>
+            <button onclick="clearAndReload()">清除缓存并重载</button>
+            <div id="loginResult"></div>
+        </div>
+        
+        <div class="section">
+            <h2>浏览器存储检查</h2>
+            <button onclick="checkStorage()">检查存储</button>
+            <button onclick="clearStorage()">清除所有存储</button>
+            <div id="storageResult"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 显示当前访问信息
+        document.getElementById('pageUrl').textContent = window.location.href;
+        document.getElementById('host').textContent = window.location.host;
+        document.getElementById('protocol').textContent = window.location.protocol;
+        
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${content}</div>`;
+        }
+        
+        async function testRelativeAPI() {
+            try {
+                const response = await fetch('/api/v1/health');
+                const text = await response.text();
+                showResult('apiResults', 
+                    `相对路径测试:<br>
+                    状态: ${response.status}<br>
+                    URL: ${response.url}<br>
+                    响应: ${text.substring(0, 100)}...`,
+                    response.ok ? 'success' : 'error'
+                );
+            } catch (error) {
+                showResult('apiResults', `相对路径测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAbsoluteAPI() {
+            try {
+                const response = await fetch(`${window.location.protocol}//${window.location.host}/api/v1/health`);
+                showResult('apiResults', 
+                    `绝对路径测试:<br>
+                    状态: ${response.status}<br>
+                    URL: ${response.url}`,
+                    response.ok ? 'success' : 'error'
+                );
+            } catch (error) {
+                showResult('apiResults', `绝对路径测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testProxyAPI() {
+            try {
+                const response = await fetch('/health');
+                showResult('apiResults', 
+                    `代理路径测试:<br>
+                    状态: ${response.status}<br>
+                    URL: ${response.url}`,
+                    response.ok ? 'success' : 'error'
+                );
+            } catch (error) {
+                showResult('apiResults', `代理路径测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                showResult('loginResult', 
+                    `登录测试:<br>
+                    状态: ${response.status}<br>
+                    URL: ${response.url}<br>
+                    响应: <pre>${JSON.stringify(data, null, 2)}</pre>`,
+                    response.ok ? 'success' : 'error'
+                );
+            } catch (error) {
+                showResult('loginResult', `登录测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkStorage() {
+            const storage = {
+                localStorage: Object.keys(localStorage),
+                sessionStorage: Object.keys(sessionStorage),
+                cookies: document.cookie
+            };
+            
+            showResult('storageResult', 
+                `存储内容:<br>
+                <strong>LocalStorage:</strong> ${storage.localStorage.join(', ') || '空'}<br>
+                <strong>SessionStorage:</strong> ${storage.sessionStorage.join(', ') || '空'}<br>
+                <strong>Cookies:</strong> ${storage.cookies || '空'}`,
+                'info'
+            );
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            showResult('storageResult', '✅ 所有存储已清除', 'success');
+        }
+        
+        function clearAndReload() {
+            clearStorage();
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
+        }
+    </script>
+</body>
+</html>

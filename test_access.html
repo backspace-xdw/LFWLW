@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>外网访问解决方案</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .solution { background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .warning { color: red; }
+        .success { color: green; }
+        code { background: #e0e0e0; padding: 2px 5px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>LFWLW 物联网平台 - 外网访问问题解决</h1>
+    
+    <div class="warning">
+        <h2>⚠️ 问题原因</h2>
+        <p>Vite 5.x 版本引入了严格的主机检查，默认拒绝非本地主机名的访问。</p>
+    </div>
+    
+    <div class="solution">
+        <h2>🔧 临时解决方案</h2>
+        <ol>
+            <li>使用本地端口转发（推荐）
+                <pre>ssh -L 50000:localhost:50000 -L 50001:localhost:50001 shenzheng@ljinvestment.diskstation.me</pre>
+                然后访问: <code>http://localhost:50000</code>
+            </li>
+            
+            <li>使用 nginx 反向代理
+                <pre>
+# nginx 配置
+server {
+    listen 80;
+    server_name ljinvestment.diskstation.me;
+    
+    location / {
+        proxy_pass http://localhost:50000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    location /api {
+        proxy_pass http://localhost:50001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}</pre>
+            </li>
+            
+            <li>构建生产版本
+                <pre>
+cd /home/shenzheng/lfwlw/frontend
+npm run build
+npx serve -s dist -l 50000 --cors</pre>
+            </li>
+        </ol>
+    </div>
+    
+    <div class="solution">
+        <h2>✅ 当前服务状态</h2>
+        <ul>
+            <li class="success">后端服务运行在: 50001 端口</li>
+            <li class="success">前端开发服务器运行在: 50000 端口（仅本地访问）</li>
+        </ul>
+    </div>
+    
+    <div class="solution">
+        <h2>📱 开发建议</h2>
+        <p>开发阶段，建议使用以下方式之一：</p>
+        <ol>
+            <li>本地开发，完成后部署到服务器</li>
+            <li>使用 SSH 隧道进行远程开发</li>
+            <li>使用 VS Code Remote 或类似工具</li>
+            <li>配置 nginx 作为统一入口</li>
+        </ol>
+    </div>
+</body>
+</html>

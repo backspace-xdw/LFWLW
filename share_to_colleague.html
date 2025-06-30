@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LFWLW 系统访问信息</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .access-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .url {
+            font-size: 18px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+            margin: 10px 0;
+        }
+        .url:hover {
+            text-decoration: underline;
+        }
+        .credentials {
+            margin: 20px 0;
+            text-align: left;
+            display: inline-block;
+        }
+        .credential-item {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .label {
+            color: #666;
+            width: 80px;
+            display: inline-block;
+        }
+        .value {
+            color: #333;
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .status {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🌐 LFWLW 物联网监控平台</h1>
+        
+        <div class="access-box">
+            <p style="margin-top: 0; color: #666;">系统访问地址：</p>
+            <a href="http://67.169.169.65:50000" target="_blank" class="url">
+                http://67.169.169.65:50000
+            </a>
+        </div>
+        
+        <div class="credentials">
+            <div class="credential-item">
+                <span class="label">用户名：</span>
+                <span class="value">admin</span>
+            </div>
+            <div class="credential-item">
+                <span class="label">密码：</span>
+                <span class="value">admin123</span>
+            </div>
+        </div>
+        
+        <a href="http://67.169.169.65:50000" target="_blank" class="button">
+            立即访问系统
+        </a>
+        
+        <p class="status">✅ 系统运行正常，可以正常访问</p>
+    </div>
+</body>
+</html>

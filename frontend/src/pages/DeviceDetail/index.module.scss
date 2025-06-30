@@ -1,0 +1,17 @@
+.deviceDetail {
+  .header {
+    margin-bottom: 0;
+    
+    .headerContent {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      h2 {
+        margin: 0 16px;
+        font-size: 20px;
+        font-weight: 600;
+      }
+    }
+  }
+}

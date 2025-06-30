@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连接测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 10px 20px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>LFWLW 连接测试</h1>
+    
+    <div class="test-section">
+        <h2>当前环境信息</h2>
+        <div id="env-info"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>连接测试</h2>
+        <button onclick="testLocalhost()">测试 localhost:50000</button>
+        <button onclick="testLocalhost50001()">测试 localhost:50001</button>
+        <button onclick="testExternalDomain()">测试外网域名</button>
+        <button onclick="testRelativeAPI()">测试相对路径 /api</button>
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>登录测试</h2>
+        <button onclick="testLogin('http://localhost:50000/api/v1/auth/login')">通过前端代理登录</button>
+        <button onclick="testLogin('http://localhost:50001/api/v1/auth/login')">直接访问后端登录</button>
+        <button onclick="testLogin('/api/v1/auth/login')">相对路径登录</button>
+        <div id="login-results"></div>
+    </div>
+
+    <script>
+        // 显示环境信息
+        document.getElementById('env-info').innerHTML = `
+            <p><strong>当前URL:</strong> ${window.location.href}</p>
+            <p><strong>协议:</strong> ${window.location.protocol}</p>
+            <p><strong>主机:</strong> ${window.location.host}</p>
+            <p><strong>端口:</strong> ${window.location.port || '80'}</p>
+        `;
+        
+        function addResult(containerId, message, className = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = className;
+            div.innerHTML = `<p>${new Date().toLocaleTimeString()} - ${message}</p>`;
+            container.appendChild(div);
+        }
+        
+        async function testLocalhost() {
+            try {
+                const response = await fetch('http://localhost:50000/api/v1/auth/login', {
+                    method: 'GET'
+                });
+                addResult('test-results', `localhost:50000 响应: ${response.status}`, 'success');
+            } catch (error) {
+                addResult('test-results', `localhost:50000 错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLocalhost50001() {
+            try {
+                const response = await fetch('http://localhost:50001/api/v1/auth/login', {
+                    method: 'GET'
+                });
+                addResult('test-results', `localhost:50001 响应: ${response.status}`, 'success');
+            } catch (error) {
+                addResult('test-results', `localhost:50001 错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testExternalDomain() {
+            try {
+                const response = await fetch('http://ljinvestment.diskstation.me/api/v1/auth/login', {
+                    method: 'GET'
+                });
+                addResult('test-results', `外网域名 响应: ${response.status}`, 'success');
+            } catch (error) {
+                addResult('test-results', `外网域名 错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testRelativeAPI() {
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'GET'
+                });
+                addResult('test-results', `相对路径 /api 响应: ${response.status}`, 'success');
+            } catch (error) {
+                addResult('test-results', `相对路径 /api 错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLogin(url) {
+            try {
+                const response = await axios.post(url, {
+                    username: 'admin',
+                    password: 'admin123'
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                addResult('login-results', 
+                    `登录成功 (${url}):<br><pre>${JSON.stringify(response.data, null, 2)}</pre>`, 
+                    'success'
+                );
+            } catch (error) {
+                const errorMsg = error.response ? 
+                    `状态码: ${error.response.status}, 消息: ${error.response.data?.message || error.message}` : 
+                    error.message;
+                addResult('login-results', `登录失败 (${url}): ${errorMsg}`, 'error');
+                
+                // 如果是CORS错误，显示详细信息
+                if (error.message.includes('Network Error') || error.message.includes('CORS')) {
+                    addResult('login-results', 
+                        `可能是CORS问题。请检查浏览器控制台的Network标签页获取更多信息。`, 
+                        'info'
+                    );
+                }
+            }
+        }
+    </script>
+</body>
+</html>

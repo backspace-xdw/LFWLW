@@ -1,0 +1,92 @@
+.container {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 64px);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.activeView {
+  color: #1890ff;
+  border-color: #1890ff;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.gridItem {
+  height: 100%;
+}
+
+.gridCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .ant-card-body {
+    flex: 1;
+  }
+
+  .ant-card-actions {
+    margin-top: auto;
+  }
+}
+
+.modelPreview {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.tags {
+  margin: 8px 0;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.empty {
+  text-align: center;
+  padding: 100px 0;
+  
+  > * {
+    display: block;
+    margin: 0 auto 16px;
+  }
+}

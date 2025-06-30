@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>外网访问测试</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>LFWLW 物联网平台外网访问测试</h1>
+    
+    <h2>访问配置：</h2>
+    <ul>
+        <li><strong>前端地址：</strong> <a href="http://ljinvestment.diskstation.me:50000" target="_blank">http://ljinvestment.diskstation.me:50000</a></li>
+        <li><strong>后端API：</strong> http://ljinvestment.diskstation.me:50001</li>
+        <li><strong>登录账号：</strong> admin / admin123</li>
+    </ul>
+    
+    <h2>测试状态：</h2>
+    <div id="status"></div>
+    
+    <script>
+        // 测试后端连接
+        fetch('http://ljinvestment.diskstation.me:50001/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: 'admin',
+                password: 'admin123'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('status').innerHTML = '<p style="color: green;">✅ 后端API连接成功！</p>';
+        })
+        .catch(error => {
+            document.getElementById('status').innerHTML = '<p style="color: red;">❌ 后端API连接失败：' + error + '</p>';
+        });
+    </script>
+</body>
+</html>

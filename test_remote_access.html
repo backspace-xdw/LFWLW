@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LFWLW远程访问测试</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status { padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        code { background: #e0e0e0; padding: 2px 5px; border-radius: 3px; }
+        .step { margin: 15px 0; padding-left: 20px; }
+        .step-number { font-weight: bold; color: #007bff; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 10px 5px; }
+        button:hover { background: #0056b3; }
+        #testResults { margin-top: 20px; }
+        .test-item { padding: 10px; margin: 5px 0; border-left: 4px solid #ddd; }
+        .test-success { border-left-color: #28a745; }
+        .test-fail { border-left-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 LFWLW 远程访问配置测试</h1>
+        
+        <div class="status info">
+            <h2>📋 实施步骤</h2>
+            <div class="step">
+                <span class="step-number">步骤 1:</span> 运行 <code>./install_nginx.sh</code> 安装nginx
+            </div>
+            <div class="step">
+                <span class="step-number">步骤 2:</span> 运行 <code>./configure_nginx.sh</code> 配置反向代理
+            </div>
+            <div class="step">
+                <span class="step-number">步骤 3:</span> 运行 <code>./check_nginx_status.sh</code> 检查状态
+            </div>
+        </div>
+        
+        <div class="status warning">
+            <h2>⚠️ 前置要求</h2>
+            <ul>
+                <li>✓ 前端服务运行在 <code>http://localhost:50000</code></li>
+                <li>✓ 后端服务运行在 <code>http://localhost:50001</code></li>
+                <li>✓ 防火墙开放80端口</li>
+                <li>✓ 域名正确解析到服务器IP</li>
+            </ul>
+        </div>
+        
+        <div class="status">
+            <h2>🔧 测试工具</h2>
+            <button onclick="testLocalAccess()">测试本地访问</button>
+            <button onclick="testRemoteAccess()">测试远程访问</button>
+            <button onclick="testAPI()">测试API连接</button>
+            <button onclick="testWebSocket()">测试WebSocket</button>
+            
+            <div id="testResults"></div>
+        </div>
+        
+        <div class="status success">
+            <h2>✅ 配置成功后</h2>
+            <p>远程同事可以通过以下地址访问：</p>
+            <ul>
+                <li>系统主页：<a href="http://ljinvestment.diskstation.me" target="_blank">http://ljinvestment.diskstation.me</a></li>
+                <li>登录账号：<code>admin</code> / <code>admin123</code></li>
+            </ul>
+        </div>
+        
+        <div class="status">
+            <h2>🛠️ 故障排查命令</h2>
+            <pre>
+# 查看nginx状态
+sudo systemctl status nginx
+
+# 查看错误日志
+sudo tail -f /var/log/nginx/error.log
+
+# 测试配置文件
+sudo nginx -t
+
+# 重启nginx
+sudo systemctl restart nginx
+            </pre>
+        </div>
+    </div>
+    
+    <script>
+        function addTestResult(test, success, message) {
+            const results = document.getElementById('testResults');
+            const item = document.createElement('div');
+            item.className = `test-item ${success ? 'test-success' : 'test-fail'}`;
+            item.innerHTML = `<strong>${test}:</strong> ${success ? '✅' : '❌'} ${message}`;
+            results.appendChild(item);
+        }
+        
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+        }
+        
+        async function testLocalAccess() {
+            clearResults();
+            try {
+                const response = await fetch('http://localhost:50000', { mode: 'no-cors' });
+                addTestResult('本地前端', true, 'localhost:50000 可访问');
+            } catch (e) {
+                addTestResult('本地前端', false, '无法访问 localhost:50000');
+            }
+            
+            try {
+                const response = await fetch('http://localhost:50001/health', { mode: 'no-cors' });
+                addTestResult('本地后端', true, 'localhost:50001 可访问');
+            } catch (e) {
+                addTestResult('本地后端', false, '无法访问 localhost:50001');
+            }
+        }
+        
+        async function testRemoteAccess() {
+            clearResults();
+            addTestResult('远程访问', false, '请在远程计算机上直接访问 http://ljinvestment.diskstation.me 进行测试');
+        }
+        
+        async function testAPI() {
+            clearResults();
+            try {
+                const response = await fetch('http://localhost:50001/health');
+                const data = await response.json();
+                addTestResult('API健康检查', true, `状态: ${data.status}, 运行时间: ${Math.round(data.uptime)}秒`);
+            } catch (e) {
+                addTestResult('API健康检查', false, '无法连接到API');
+            }
+        }
+        
+        async function testWebSocket() {
+            clearResults();
+            addTestResult('WebSocket', false, '请在主系统中测试WebSocket连接');
+        }
+    </script>
+</body>
+</html>

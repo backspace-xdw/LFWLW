@@ -1,0 +1,18 @@
+快速修复步骤：
+
+1. 让您的同事使用浏览器的无痕/隐私模式
+   - Chrome: Ctrl+Shift+N (Windows) 或 Cmd+Shift+N (Mac)
+   - Firefox: Ctrl+Shift+P (Windows) 或 Cmd+Shift+P (Mac)
+   - Safari: Cmd+Shift+N
+   - Edge: Ctrl+Shift+N
+
+2. 在无痕模式下访问：
+   http://67.169.169.65:50000
+
+3. 登录信息：
+   用户名: admin
+   密码: admin123
+
+4. 应该能正常登录了！
+
+原因：浏览器缓存了旧的API配置，无痕模式不会加载这些缓存。

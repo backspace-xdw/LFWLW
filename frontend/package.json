@@ -1,0 +1,47 @@
+{
+  "name": "lfwlw-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "@ant-design/charts": "^2.0.0",
+    "@ant-design/icons": "^5.2.6",
+    "@react-three/drei": "^9.90.0",
+    "@react-three/fiber": "^8.15.0",
+    "@types/lodash": "^4.14.202",
+    "@types/three": "^0.177.0",
+    "antd": "^5.12.0",
+    "axios": "^1.6.2",
+    "classnames": "^2.3.2",
+    "dayjs": "^1.11.13",
+    "echarts": "^5.4.3",
+    "echarts-for-react": "^3.0.2",
+    "lodash": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "socket.io-client": "^4.7.2",
+    "three": "^0.160.1",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.55.0",
+    "postcss": "^8.4.32",
+    "sass": "^1.69.5",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.7"
+  }
+}

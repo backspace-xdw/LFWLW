@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>后端API测试</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .test-section { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+        pre { background: #e0e0e0; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>LFWLW 后端API测试</h1>
+    
+    <div class="test-section">
+        <h2>测试配置</h2>
+        <p><strong>后端地址：</strong> http://ljinvestment.diskstation.me:50001</p>
+        <p><strong>测试账号：</strong> admin / admin123</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>1. 测试登录API</h2>
+        <button onclick="testLogin()">测试登录</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 测试设备列表API</h2>
+        <button onclick="testDevices()">获取设备列表</button>
+        <div id="devicesResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 测试WebSocket连接</h2>
+        <button onclick="testWebSocket()">连接WebSocket</button>
+        <button onclick="disconnectWebSocket()">断开连接</button>
+        <div id="wsStatus"></div>
+        <div id="wsMessages"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://ljinvestment.diskstation.me:50001';
+        let token = '';
+        let socket = null;
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 0) {
+                    token = data.data.accessToken;
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ 登录成功！</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ 登录失败: ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ 请求失败: ${error.message}</p>`;
+            }
+        }
+        
+        async function testDevices() {
+            const resultDiv = document.getElementById('devicesResult');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">请先登录获取token</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/devices`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 0) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ 获取成功！共 ${data.data.items.length} 个设备</p>
+                        <pre>${JSON.stringify(data.data.items, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ 获取失败: ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ 请求失败: ${error.message}</p>`;
+            }
+        }
+        
+        function testWebSocket() {
+            const statusDiv = document.getElementById('wsStatus');
+            const messagesDiv = document.getElementById('wsMessages');
+            
+            if (!token) {
+                statusDiv.innerHTML = '<p class="error">请先登录获取token</p>';
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                statusDiv.innerHTML = '<p class="error">WebSocket已连接</p>';
+                return;
+            }
+            
+            statusDiv.innerHTML = '<p>连接中...</p>';
+            messagesDiv.innerHTML = '';
+            
+            // 加载 Socket.IO 客户端
+            const script = document.createElement('script');
+            script.src = 'https://cdn.socket.io/4.5.4/socket.io.min.js';
+            script.onload = () => {
+                socket = io(API_BASE, {
+                    auth: { token },
+                    transports: ['websocket']
+                });
+                
+                socket.on('connect', () => {
+                    statusDiv.innerHTML = '<p class="success">✅ WebSocket已连接</p>';
+                    socket.emit('subscribe:monitor');
+                    socket.emit('subscribe:alarms');
+                });
+                
+                socket.on('realtime:data', (data) => {
+                    const msg = document.createElement('div');
+                    msg.innerHTML = `<p>实时数据: ${JSON.stringify(data)}</p>`;
+                    messagesDiv.insertBefore(msg, messagesDiv.firstChild);
+                    if (messagesDiv.children.length > 10) {
+                        messagesDiv.removeChild(messagesDiv.lastChild);
+                    }
+                });
+                
+                socket.on('alarm:new', (alarm) => {
+                    const msg = document.createElement('div');
+                    msg.innerHTML = `<p class="error">告警: ${JSON.stringify(alarm)}</p>`;
+                    messagesDiv.insertBefore(msg, messagesDiv.firstChild);
+                });
+                
+                socket.on('disconnect', () => {
+                    statusDiv.innerHTML = '<p class="error">❌ WebSocket已断开</p>';
+                });
+            };
+            document.head.appendChild(script);
+        }
+        
+        function disconnectWebSocket() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                document.getElementById('wsStatus').innerHTML = '<p>已断开连接</p>';
+            }
+        }
+    </script>
+</body>
+</html>
