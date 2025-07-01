@@ -14,6 +14,16 @@ declare global {
 }
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+  // 开发环境绕过认证
+  if (process.env.NODE_ENV === 'development') {
+    req.user = {
+      userId: 'dev-user',
+      username: 'devuser',
+      role: 'admin',
+    }
+    return next()
+  }
+
   const authHeader = req.headers.authorization
   
   if (!authHeader) {

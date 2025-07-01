@@ -61,7 +61,7 @@ const UserManagement: React.FC = () => {
     setLoading(true);
     try {
       const response = await request.get('/api/v1/users');
-      setUsers(response.items);
+      setUsers(response.data.data.items || []);
     } catch (error) {
       message.error('获取用户列表失败');
     } finally {
@@ -82,7 +82,7 @@ const UserManagement: React.FC = () => {
         validUntil: values.validUntil?.format('YYYY-MM-DD'),
       });
 
-      const { user, initialPassword } = response;
+      const { user, initialPassword } = response.data.data;
       
       Modal.success({
         title: '用户创建成功',
@@ -145,7 +145,7 @@ const UserManagement: React.FC = () => {
   const handleResetPassword = async (userId: string) => {
     try {
       const response = await request.post(`/api/v1/users/${userId}/reset-password`);
-      const { tempPassword } = response;
+      const { tempPassword } = response.data.data;
       
       Modal.success({
         title: '密码重置成功',

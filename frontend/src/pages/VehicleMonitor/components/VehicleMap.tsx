@@ -131,17 +131,20 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
 
   // 获取车辆图标
   const getVehicleIcon = (vehicle: Vehicle) => {
-    // 这里应该返回实际的图标URL
-    // 根据车辆类型和状态返回不同的图标
-    const baseUrl = '/vehicle-icons/'
-    const status = vehicle.status === 'online' || vehicle.status === 'moving' ? 'active' : 'inactive'
-    return `${baseUrl}${vehicle.type}-${status}.png`
+    // 使用在线图标或emoji作为标记
+    const iconMap: Record<string, string> = {
+      'car': 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+      'truck': 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png',
+      'bus': 'https://webapi.amap.com/theme/v1.3/markers/n/mark_g.png',
+      'other': 'https://webapi.amap.com/theme/v1.3/markers/n/mark_bs.png'
+    }
+    return iconMap[vehicle.type] || iconMap.other
   }
 
   // 获取聚合图标
   const getClusterIcon = () => {
-    // 返回聚合图标URL
-    return '/vehicle-icons/cluster.png'
+    // 使用高德地图默认聚合图标
+    return 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png'
   }
 
   // 显示车辆信息窗口

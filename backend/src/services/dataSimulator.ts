@@ -123,6 +123,69 @@ export class DataSimulator {
       
       this.io.emit('device:status', statusUpdate)
     }, 60000)
+
+    // 模拟车辆位置更新（每5秒）
+    this.startVehicleSimulation()
+  }
+
+  // 模拟车辆位置数据
+  private startVehicleSimulation() {
+    const vehicles = [
+      { 
+        id: 'v1', 
+        lng: 116.404, 
+        lat: 39.915, 
+        speed: 45,
+        baseSpeed: 45,
+        direction: 90 
+      },
+      { 
+        id: 'v2', 
+        lng: 116.407, 
+        lat: 39.904, 
+        speed: 0,
+        baseSpeed: 0,
+        direction: 180 
+      }
+    ]
+    
+    setInterval(() => {
+      vehicles.forEach(vehicle => {
+        // 随机移动车辆位置
+        if (vehicle.baseSpeed > 0) {
+          // 模拟车辆移动
+          const speedVariation = (Math.random() - 0.5) * 10
+          vehicle.speed = Math.max(0, vehicle.baseSpeed + speedVariation)
+          
+          if (vehicle.speed > 0) {
+            // 根据方向移动
+            const distance = vehicle.speed / 3600 / 200 // 简化的距离计算
+            const directionRad = (vehicle.direction * Math.PI) / 180
+            
+            vehicle.lng += distance * Math.cos(directionRad)
+            vehicle.lat += distance * Math.sin(directionRad)
+            
+            // 随机改变方向
+            vehicle.direction = (vehicle.direction + (Math.random() - 0.5) * 10 + 360) % 360
+          }
+        }
+        
+        const locationData = {
+          vehicleId: vehicle.id,
+          location: {
+            longitude: vehicle.lng,
+            latitude: vehicle.lat,
+            speed: Math.round(vehicle.speed),
+            direction: Math.round(vehicle.direction),
+            updateTime: new Date().toISOString()
+          }
+        }
+        
+        // 发送车辆位置更新
+        this.io.emit('vehicle-location', locationData)
+        logger.info(`Vehicle ${vehicle.id} location update: ${vehicle.lng.toFixed(6)}, ${vehicle.lat.toFixed(6)}`)
+      })
+    }, 5000)
   }
 
   // 处理客户端命令

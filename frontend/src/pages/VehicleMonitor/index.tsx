@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Layout } from 'antd'
 import VehicleTree from './components/VehicleTree'
-import VehicleMap from './components/VehicleMap'
+import VehicleMap from './components/VehicleMap'  // 使用高德地图版本
+// import VehicleMapSimple from './components/VehicleMapSimple'  // 简化版本
 import styles from './index.module.scss'
 import { useRealtimeData } from '@/hooks/useRealtimeData'
 

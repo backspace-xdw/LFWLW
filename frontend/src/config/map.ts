@@ -1,6 +1,6 @@
 // 高德地图配置
 export const AMAP_CONFIG = {
-  key: 'YOUR_AMAP_KEY', // 请替换为您的高德地图API密钥
+  key: '0236671cfb04ddf41d952d0a47b78106', // 高德地图API密钥
   version: '2.0',
   plugins: [
     'AMap.MarkerCluster',
