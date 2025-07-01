@@ -14,6 +14,14 @@ export const initializeSocketIO = (io: Server) => {
   io.use(async (socket: Socket, next) => {
     try {
       const token = socket.handshake.auth.token
+      
+      // 开发环境允许无token连接
+      if (!token && process.env.NODE_ENV === 'development') {
+        socket.data.userId = 'dev-user'
+        socket.data.username = 'developer'
+        return next()
+      }
+      
       if (!token) {
         return next(new Error('Authentication required'))
       }

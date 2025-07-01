@@ -113,6 +113,7 @@ export function useRealtimeData(options: UseRealtimeDataOptions = {}) {
 // 用于监控大屏的Hook
 export function useMonitorData() {
   const [connected, setConnected] = useState(false)
+  const [deviceData, setDeviceData] = useState<Record<string, DeviceData>>({})
   const [realtimeData, setRealtimeData] = useState<DeviceData[]>([])
   const [alarms, setAlarms] = useState<any[]>([])
 
@@ -125,7 +126,13 @@ export function useMonitorData() {
 
     // 处理实时数据
     const handleRealtimeData = (data: DeviceData) => {
-      setRealtimeData(prev => [...prev.slice(-99), data])
+      setDeviceData(prev => ({
+        ...prev,
+        [data.deviceId]: data
+      }))
+      
+      // 同时维护一个数组格式的实时数据，用于图表展示
+      setRealtimeData(prev => [...prev, data].slice(-100)) // 保留最近100条数据
     }
 
     // 处理告警
@@ -151,6 +158,7 @@ export function useMonitorData() {
 
   return {
     connected,
+    deviceData,
     realtimeData,
     alarms,
   }

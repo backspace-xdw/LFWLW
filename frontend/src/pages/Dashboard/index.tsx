@@ -31,7 +31,10 @@ interface AlarmStats {
 }
 
 const Dashboard: React.FC = () => {
+  console.log('Dashboard component rendering')
   const { connected, realtimeData, alarms } = useMonitorData()
+  console.log('Dashboard data:', { connected, realtimeDataLength: realtimeData?.length, alarmsLength: alarms?.length })
+  
   const [deviceStats, setDeviceStats] = useState<DeviceStats>({
     total: 0,
     online: 0,
@@ -59,8 +62,10 @@ const Dashboard: React.FC = () => {
 
   // 更新仪表盘数据
   useEffect(() => {
+    console.log('实时数据更新:', realtimeData.length, '条数据')
     if (realtimeData.length > 0) {
       const latestData = realtimeData[realtimeData.length - 1]
+      console.log('最新数据:', latestData)
       if (latestData.deviceId === 'PUMP_001' && latestData.data) {
         setGaugeData({
           temperature: latestData.data.temperature || gaugeData.temperature,
@@ -242,6 +247,12 @@ const Dashboard: React.FC = () => {
       key: 'message',
     },
   ]
+
+  // 添加错误边界
+  if (!styles) {
+    console.error('Dashboard styles not loaded')
+    return <div>Error: Styles not loaded</div>
+  }
 
   return (
     <div className={styles.dashboard}>

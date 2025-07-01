@@ -1,0 +1,105 @@
+.dataAnalysis {
+  .filterCard {
+    margin-bottom: 16px;
+  }
+
+  .summaryRow {
+    margin-bottom: 16px;
+  }
+
+  .chartCard {
+    min-height: 600px;
+
+    h4 {
+      margin-bottom: 16px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
+
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+  }
+
+  .tabContent {
+    padding: 16px 0;
+  }
+
+  // 图表通用样式
+  :global {
+    .ant-tabs-tab {
+      span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+
+    .ant-statistic-title {
+      color: rgba(0, 0, 0, 0.65);
+      font-size: 14px;
+    }
+
+    .ant-statistic-content {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    // 图表容器样式
+    .g2-chart {
+      height: 400px;
+    }
+
+    // 图例样式
+    .g2-legend-list-item {
+      .g2-legend-marker {
+        border-radius: 2px !important;
+      }
+      
+      .g2-legend-title {
+        font-weight: 500;
+      }
+    }
+
+    // 日期选择器样式
+    .ant-picker-range {
+      width: 100%;
+    }
+
+    // 表格样式
+    .ant-table {
+      margin-top: 16px;
+    }
+
+    // 选择器样式
+    .ant-select-selector {
+      min-height: 32px;
+    }
+  }
+
+  // 响应式布局
+  @media (max-width: 768px) {
+    .filterCard {
+      .ant-row {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .ant-col {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+        text-align: left !important;
+      }
+    }
+
+    .summaryRow {
+      .ant-col {
+        margin-bottom: 8px;
+      }
+    }
+  }
+}

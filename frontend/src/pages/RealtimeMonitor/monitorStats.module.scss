@@ -1,0 +1,49 @@
+.monitorStats {
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+
+  .statsCard {
+    margin-bottom: 16px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    :global {
+      .ant-card-head {
+        padding: 8px 16px;
+        min-height: auto;
+      }
+
+      .ant-card-body {
+        padding: 12px;
+      }
+
+      .ant-statistic-title {
+        font-size: 12px;
+      }
+
+      .ant-statistic-content {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .dataItem {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .deviceName {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .dataValues {
+      display: flex;
+      gap: 8px;
+    }
+  }
+}

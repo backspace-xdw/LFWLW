@@ -15,6 +15,8 @@ import {
   MenuUnfoldOutlined,
   TeamOutlined,
   CameraOutlined,
+  CarOutlined,
+  BlockOutlined,
 } from '@ant-design/icons'
 import { useAuthStore } from '@/store/auth'
 import styles from './index.module.scss'
@@ -51,6 +53,16 @@ const menuItems = [
     key: 'models',
     icon: <CameraOutlined />,
     label: '3D模型',
+  },
+  {
+    key: 'graphics-editor',
+    icon: <BlockOutlined />,
+    label: '2D图形编辑',
+  },
+  {
+    key: 'vehicle-monitor',
+    icon: <CarOutlined />,
+    label: '车辆监控',
   },
   {
     key: 'users',

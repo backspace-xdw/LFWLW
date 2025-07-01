@@ -11,6 +11,7 @@ export default defineConfig({
   },
   server: {
     port: 50000,
+    host: '0.0.0.0',
     proxy: {
       '/api': {
         target: 'http://localhost:50001',
@@ -18,6 +19,11 @@ export default defineConfig({
       },
       '/ws': {
         target: 'ws://localhost:50001',
+        ws: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:50001',
+        changeOrigin: true,
         ws: true,
       },
     },

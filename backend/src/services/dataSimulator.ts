@@ -1,6 +1,7 @@
 import { Server } from 'socket.io'
 import { signalGenerator, DeviceSignal } from './signalGenerator'
 import { logger } from '../utils/logger'
+import { alarmRuleManager } from './alarmRules'
 
 export class DataSimulator {
   private io: Server
@@ -70,88 +71,25 @@ export class DataSimulator {
 
   // 检查告警条件
   private checkAlarmConditions(signal: DeviceSignal) {
-    const { deviceId, data } = signal
-    const alarms: any[] = []
-
-    // 温度告警检查
-    if (data.temperature !== undefined) {
-      if (data.temperature > 85) {
-        alarms.push({
-          deviceId,
-          type: 'temperature_high',
-          severity: 'critical',
-          value: data.temperature,
-          threshold: 85,
-          message: `设备 ${deviceId} 温度过高: ${data.temperature}°C`,
-        })
-      } else if (data.temperature > 80) {
-        alarms.push({
-          deviceId,
-          type: 'temperature_warning',
-          severity: 'warning',
-          value: data.temperature,
-          threshold: 80,
-          message: `设备 ${deviceId} 温度警告: ${data.temperature}°C`,
+    const { deviceId, data, timestamp } = signal
+    
+    // 使用告警规则管理器检查每个参数
+    Object.entries(data).forEach(([parameter, value]) => {
+      if (typeof value === 'number') {
+        const alarms = alarmRuleManager.checkAlarms(deviceId, parameter, value, timestamp)
+        
+        // 发送告警
+        alarms.forEach(alarm => {
+          // 发送到所有订阅告警的客户端
+          this.io.to('alarms:all').emit('alarm:new', alarm)
+          
+          // 根据严重级别发送
+          this.io.to(`alarms:${alarm.severity}`).emit('alarm:new', alarm)
+          
+          // 记录告警日志
+          logger.info(`New alarm: ${alarm.severity} - ${alarm.message}`)
         })
       }
-    }
-
-    // 压力告警检查
-    if (data.pressure !== undefined) {
-      if (data.pressure > 4.5) {
-        alarms.push({
-          deviceId,
-          type: 'pressure_high',
-          severity: 'high',
-          value: data.pressure,
-          threshold: 4.5,
-          message: `设备 ${deviceId} 压力过高: ${data.pressure} bar`,
-        })
-      }
-    }
-
-    // 振动告警检查
-    if (data.vibration !== undefined && data.vibration > 1.0) {
-      alarms.push({
-        deviceId,
-        type: 'vibration_high',
-        severity: 'warning',
-        value: data.vibration,
-        threshold: 1.0,
-        message: `设备 ${deviceId} 振动异常: ${data.vibration}`,
-      })
-    }
-
-    // 液位告警检查
-    if (data.level !== undefined) {
-      if (data.level < 20) {
-        alarms.push({
-          deviceId,
-          type: 'level_low',
-          severity: 'warning',
-          value: data.level,
-          threshold: 20,
-          message: `设备 ${deviceId} 液位过低: ${data.level}%`,
-        })
-      } else if (data.level > 90) {
-        alarms.push({
-          deviceId,
-          type: 'level_high',
-          severity: 'warning',
-          value: data.level,
-          threshold: 90,
-          message: `设备 ${deviceId} 液位过高: ${data.level}%`,
-        })
-      }
-    }
-
-    // 发送告警
-    alarms.forEach(alarm => {
-      this.io.emit('alarm:new', {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        ...alarm,
-        timestamp: signal.timestamp,
-      })
     })
   }
 

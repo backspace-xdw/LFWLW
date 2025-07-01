@@ -7,15 +7,19 @@
 ### 前端
 - React 18 + TypeScript
 - Ant Design 5
-- ECharts + Three.js
-- Socket.io Client
-- Zustand 状态管理
+- ECharts（数据可视化）
+- Konva.js（2D图形编辑）
+- Socket.io Client（实时通信）
+- Zustand + Immer（状态管理）
+- Vite（构建工具）
 
 ### 后端
 - Node.js + Express + TypeScript
 - PostgreSQL + InfluxDB + Redis
-- Socket.io + MQTT
+- Socket.io（WebSocket服务）
+- MQTT（设备通信）
 - JWT 认证
+- Winston（日志管理）
 
 ## 项目结构
 
@@ -62,18 +66,16 @@ cp backend/.env.example backend/.env
 ### 3. 启动开发服务器
 
 ```bash
-# 同时启动前后端
-npm run dev
-
-# 或分别启动
-npm run dev:frontend  # 前端运行在 http://localhost:3000
-npm run dev:backend   # 后端运行在 http://localhost:5000
+# 分别启动前后端
+cd frontend && npm run dev  # 前端运行在 http://localhost:50000
+cd backend && npm run dev   # 后端运行在 http://localhost:50001
 ```
 
 ### 4. 默认登录账号
 
-- 用户名: admin
-- 密码: admin123
+- 管理员账号: admin / admin123
+- 普通用户: user / user123
+- 运维人员: operator / operator123
 
 ## 主要功能
 
@@ -82,14 +84,40 @@ npm run dev:backend   # 后端运行在 http://localhost:5000
 - ✅ 响应式布局框架
 - ✅ 监控仪表板（仪表盘、图表）
 - ✅ 基础路由和导航
+- ✅ 设备管理（完整CRUD操作）
+- ✅ 实时数据监控（WebSocket推送）
+- ✅ 2D图形编辑器（工业P&ID符号）
+- ✅ 告警管理系统（多级别告警规则）
+- ✅ 用户管理（角色权限控制）
+- ✅ 数据可视化（ECharts集成）
+
+### 新增功能（2025-06-30）
+- ✅ **2D图形编辑器**
+  - 基于Konva.js实现的工业图形编辑器
+  - 支持P&ID标准工业符号（泵、阀门、储罐、传感器等）
+  - 实时数据绑定和动态显示
+  - 图形拖拽、缩放、旋转操作
+  - 图形属性配置面板
+  - 场景保存和加载
+
+- ✅ **高级告警管理**
+  - 支持多种告警类型：
+    - 高高报警(HH) - 超过高高限值
+    - 高报警(H) - 超过高限值  
+    - 低报警(L) - 低于低限值
+    - 低低报警(LL) - 低于低低限值
+    - 变化率报警(ROC) - 单位时间变化量超限
+    - 偏差报警(DEVIATION) - 与设定值偏差超限
+  - 告警规则配置管理
+  - 延迟触发和死区设置
+  - 告警状态管理（活动/确认/解决）
+  - 实时告警推送和统计
 
 ### 开发中
-- 🔧 设备管理（CRUD）
-- 🔧  实时数据监控
 - 🔧 3D可视化展示
-- 🔧 告警管理系统
 - 🔧 数据分析报表
 - 🔧 白标定制功能
+- 🔧 移动端适配优化
 
 ## 核心特性
 
@@ -103,15 +131,18 @@ npm run dev:backend   # 后端运行在 http://localhost:5000
 - MQTT设备数据接入
 - 仪表盘可视化展示
 
-### 3. 3D可视化
-- Three.js 3D渲染
-- 设备模型展示
-- 数据驱动动画
+### 3. 2D/3D可视化
+- Konva.js 2D图形编辑器（已实现）
+- P&ID工业符号库
+- 实时数据绑定
+- Three.js 3D渲染（开发中）
 
 ### 4. 告警管理
-- 多级告警规则
+- 六种告警类型（HH/H/L/LL/ROC/DEVIATION）
+- 灵活的告警规则配置
+- 延迟触发和死区设置
 - 实时告警推送
-- 告警统计分析
+- 告警生命周期管理
 
 ## 开发指南
 

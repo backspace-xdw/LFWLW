@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO 测试</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Socket.IO 连接测试</h1>
+    <div id="status">连接中...</div>
+    <div id="data"></div>
+    
+    <script>
+        const statusEl = document.getElementById('status');
+        const dataEl = document.getElementById('data');
+        
+        // 通过代理连接
+        const socket = io('', {
+            path: '/socket.io/',
+            transports: ['polling', 'websocket'],
+            reconnection: true,
+        });
+        
+        socket.on('connect', () => {
+            statusEl.textContent = '✅ 已连接: ' + socket.id;
+            console.log('Connected:', socket.id);
+            
+            // 订阅监控数据
+            socket.emit('subscribe:monitor');
+        });
+        
+        socket.on('disconnect', () => {
+            statusEl.textContent = '❌ 已断开';
+        });
+        
+        socket.on('connect_error', (error) => {
+            statusEl.textContent = '❌ 连接错误: ' + error.message;
+            console.error('Connection error:', error);
+        });
+        
+        // 监听实时数据
+        socket.on('realtime:data', (data) => {
+            console.log('Received data:', data);
+            const p = document.createElement('p');
+            p.textContent = `${new Date().toLocaleTimeString()} - ${data.deviceId}: ${JSON.stringify(data.data)}`;
+            dataEl.insertBefore(p, dataEl.firstChild);
+            if (dataEl.children.length > 10) {
+                dataEl.removeChild(dataEl.lastChild);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -4,6 +4,8 @@ import deviceRoutes from './device.routes'
 import dataRoutes from './data.routes'
 import alarmRoutes from './alarm.routes'
 import userRoutes from './user.routes'
+import alarmRulesRoutes from './alarmRules'
+import analysisRoutes from './analysis.routes'
 
 const router = Router()
 
@@ -15,6 +17,8 @@ router.use('/devices', deviceRoutes)
 router.use('/data', dataRoutes)
 router.use('/alarms', alarmRoutes)
 router.use('/users', userRoutes)
+router.use('/alarm-rules', alarmRulesRoutes)
+router.use('/analysis', analysisRoutes)
 
 // Default route
 router.get('/', (req, res) => {

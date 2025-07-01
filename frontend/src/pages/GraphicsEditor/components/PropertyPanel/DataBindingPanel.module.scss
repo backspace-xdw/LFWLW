@@ -1,0 +1,59 @@
+.panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  margin-bottom: 16px;
+}
+
+.bindings {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.bindingItem {
+  background-color: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.bindingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  
+  span {
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+.formItem {
+  margin-bottom: 12px;
+  
+  :global {
+    .ant-form-item-label {
+      padding-bottom: 4px;
+      
+      label {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+  }
+}
+
+.empty {
+  margin-top: 48px;
+}
+
+.footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e8e8e8;
+}

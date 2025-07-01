@@ -1,0 +1,89 @@
+.panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fafafa;
+}
+
+.header {
+  padding: 16px;
+  border-bottom: 1px solid #e8e8e8;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+.devices {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deviceCard {
+  :global {
+    .ant-card-head {
+      min-height: auto;
+      padding: 8px 12px;
+    }
+    
+    .ant-card-body {
+      padding: 12px;
+    }
+  }
+}
+
+.deviceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.deviceInfo {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.deviceId {
+  font-family: monospace;
+}
+
+.deviceType {
+  color: #999;
+}
+
+.dataList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dataItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.dataKey {
+  color: #666;
+}
+
+.dataValue {
+  font-family: monospace;
+  color: #1890ff;
+  font-weight: 500;
+}

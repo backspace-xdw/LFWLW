@@ -40,11 +40,15 @@ class SocketService {
 
     const { token } = useAuthStore.getState()
     
-    this.socket = io(import.meta.env.VITE_WS_URL || 'http://localhost:5000', {
+    // 使用相对路径，通过代理连接
+    const wsUrl = import.meta.env.VITE_WS_URL || ''
+    
+    this.socket = io(wsUrl, {
+      path: '/socket.io/',
       auth: {
         token,
       },
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
@@ -67,6 +71,8 @@ class SocketService {
     this.socket.on('connect', () => {
       console.log('Socket connected:', this.socket?.id)
       this.emit('connected', true)
+      // 重新订阅
+      console.log('重新订阅监控数据...')
     })
 
     this.socket.on('disconnect', () => {

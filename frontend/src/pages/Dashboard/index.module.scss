@@ -1,4 +1,11 @@
 .dashboard {
+  .connectionStatus {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    z-index: 10;
+  }
+  
   .statCard {
     height: 100%;
     transition: all 0.3s;

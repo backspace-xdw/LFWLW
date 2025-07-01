@@ -61,8 +61,8 @@ const Login: React.FC = () => {
       <div className={styles.loginBox}>
         <div className={styles.loginHeader}>
           <img src="/src/assets/logo.png" alt="Logo" className={styles.logo} />
-          <h1 className={styles.title}>LFWLW物联网监控平台</h1>
-          <p className={styles.subtitle}>IoT Monitoring Platform</p>
+          <h1 className={styles.title}>ISAFV-QHSE AIoT PLATFORM</h1>
+          <p className={styles.subtitle}>Intelligent Safety & Quality Management System</p>
         </div>
         
         <Form
@@ -108,7 +108,7 @@ const Login: React.FC = () => {
         </Form>
         
         <div className={styles.loginFooter}>
-          <p>© 2024 LFWLW Platform. All rights reserved.</p>
+          <p>© 2024 ISAFV-QHSE Platform. All rights reserved.</p>
         </div>
       </div>
       

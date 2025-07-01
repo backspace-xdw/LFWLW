@@ -12,6 +12,8 @@ import DataAnalysis from './pages/DataAnalysis'
 import SystemSettings from './pages/SystemSettings'
 import UserManagement from './pages/UserManagement'
 import Model3D from './pages/Model3D'
+import VehicleMonitor from './pages/VehicleMonitor'
+import GraphicsEditor from './pages/GraphicsEditor'
 import { useAuthStore } from './store/auth'
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -41,6 +43,8 @@ function App() {
             <Route path="alarms" element={<AlarmManagement />} />
             <Route path="analysis" element={<DataAnalysis />} />
             <Route path="models" element={<Model3D />} />
+            <Route path="graphics-editor" element={<GraphicsEditor />} />
+            <Route path="vehicle-monitor" element={<VehicleMonitor />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="settings" element={<SystemSettings />} />
           </Route>
