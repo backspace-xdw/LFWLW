@@ -14,6 +14,7 @@ import UserManagement from './pages/UserManagement'
 import Model3D from './pages/Model3D'
 import VehicleMonitor from './pages/VehicleMonitor'
 import GraphicsEditor from './pages/GraphicsEditor'
+import Demo3D from './pages/Demo3D'
 import { useAuthStore } from './store/auth'
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -27,6 +28,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/demo3d" element={<Demo3D />} />
           <Route
             path="/"
             element={

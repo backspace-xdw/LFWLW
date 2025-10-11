@@ -1,0 +1,106 @@
+.demo3d {
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .card {
+    width: 100%;
+    max-width: 1400px;
+    height: calc(100vh - 40px);
+
+    :global(.ant-card-body) {
+      height: calc(100% - 58px);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+  }
+
+  .canvasContainer {
+    flex: 1;
+    width: 100%;
+    background: linear-gradient(180deg, #e6f4ff 0%, #f5f5f5 100%);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .controls {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .stats {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-around;
+    padding: 16px;
+    background: #fafafa;
+    border-radius: 6px;
+
+    :global(.ant-statistic) {
+      text-align: center;
+
+      :global(.ant-statistic-title) {
+        font-size: 12px;
+        color: #666;
+      }
+
+      :global(.ant-statistic-content) {
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+.dataCard {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 150px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10px);
+
+  .dataRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .label {
+      color: #666;
+      font-weight: 500;
+      margin-right: 12px;
+    }
+
+    .value {
+      font-weight: bold;
+      color: #1890ff;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 13px;
+    }
+
+    :global(.ant-progress) {
+      flex: 1;
+      margin-left: 8px;
+    }
+  }
+}

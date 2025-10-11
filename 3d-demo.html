@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D工业设备监控演示</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            margin: 20px;
+        }
+        h1 {
+            color: #1890ff;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        .info {
+            color: #666;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+        .demo-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 18px;
+            margin: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .demo-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        .secondary-btn {
+            background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+            box-shadow: 0 5px 15px rgba(24, 144, 255, 0.4);
+        }
+        .secondary-btn:hover {
+            box-shadow: 0 8px 25px rgba(24, 144, 255, 0.6);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            color: #333;
+        }
+        .feature h3 {
+            color: #1890ff;
+            margin-bottom: 10px;
+        }
+        .login-info {
+            background: #f0f5ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: #333;
+        }
+        .login-info code {
+            background: #e6f4ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #1890ff;
+        }
+        .screenshot {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏭 ISAFV-QHSE AIoT Platform</h1>
+        <h2 style="color: #722ed1;">3D工业设备实时监控演示</h2>
+
+        <div class="info">
+            <p>欢迎体验我们的3D工业设备监控系统！</p>
+            <p>本系统采用 React + Three.js 技术，实现了工业设备的3D可视化监控。</p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🎯 实时数据</h3>
+                <p>温度、压力、流量等参数实时更新</p>
+            </div>
+            <div class="feature">
+                <h3>🎨 3D可视化</h3>
+                <p>泵、储罐、阀门、反应器等设备3D展示</p>
+            </div>
+            <div class="feature">
+                <h3>✨ 动画效果</h3>
+                <p>设备旋转、流动粒子、状态指示灯</p>
+            </div>
+            <div class="feature">
+                <h3>📊 数据面板</h3>
+                <p>漂浮数据卡片，跟随设备位置</p>
+            </div>
+        </div>
+
+        <div style="margin: 30px 0;">
+            <a href="http://ljinvestment.diskstation.me:50000/demo3d" target="_blank" class="demo-btn">
+                🚀 立即体验3D演示
+            </a>
+            <a href="http://ljinvestment.diskstation.me:50000/" target="_blank" class="demo-btn secondary-btn">
+                🏠 访问完整系统
+            </a>
+        </div>
+
+        <div class="login-info">
+            <h3>🔑 登录信息</h3>
+            <p>如需登录完整系统，请使用以下账号：</p>
+            <p>普通管理员：<code>admin</code> / <code>admin123</code></p>
+            <p>超级管理员：<code>superadmin</code> / <code>SuperAdmin@2024</code></p>
+        </div>
+
+        <div style="margin-top: 30px; color: #666;">
+            <h3 style="color: #1890ff;">功能特色</h3>
+            <ul style="text-align: left; display: inline-block;">
+                <li>🔄 自动旋转场景，360度查看</li>
+                <li>🖱️ 鼠标交互：拖拽旋转、滚轮缩放、右键平移</li>
+                <li>💡 多光源渲染，真实光影效果</li>
+                <li>📈 实时数据每秒更新</li>
+                <li>🎯 状态指示：正常(绿)、警告(黄)、异常(红)</li>
+                <li>💧 管道流动粒子动画</li>
+                <li>📊 液位、开度可视化显示</li>
+                <li>🏷️ 设备标签和参数悬浮显示</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <p style="color: #999; font-size: 14px;">
+                本演示展示了化工生产线的实时监控场景<br>
+                包含循环泵、控制阀、储罐和反应器等设备
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 添加一些动态效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.demo-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05) translateY(-3px)';
+                });
+                btn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1) translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
