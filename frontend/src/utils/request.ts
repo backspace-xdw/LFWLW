@@ -31,30 +31,43 @@ request.interceptors.response.use(
     return response
   },
   (error: AxiosError) => {
-    if (error.response) {
-      const { status, data } = error.response as any
-      switch (status) {
-        case 401:
-          message.error('登录已过期，请重新登录')
-          useAuthStore.getState().logout()
-          window.location.href = '/login'
-          break
-        case 403:
-          message.error('您没有权限执行此操作')
-          break
-        case 404:
-          message.error('请求的资源不存在')
-          break
-        case 500:
-          message.error('服务器错误，请稍后重试')
-          break
-        default:
-          message.error(data?.message || '请求失败')
+    // 检查是否配置了静默模式（不显示错误提示）
+    const config = error.config as any
+    const silent = config?.silent || config?.params?.silent
+
+    if (!silent) {
+      if (error.response) {
+        const { status, data } = error.response as any
+        switch (status) {
+          case 401:
+            message.error('登录已过期，请重新登录')
+            useAuthStore.getState().logout()
+            window.location.href = '/login'
+            break
+          case 403:
+            message.error('您没有权限执行此操作')
+            break
+          case 404:
+            // 静默处理404，不弹窗（很多可选资源可能不存在）
+            console.warn('请求的资源不存在:', config?.url)
+            break
+          case 429:
+            // 静默处理429 Too Many Requests，不弹窗
+            console.warn('请求频率过高:', config?.url)
+            break
+          case 500:
+            message.error('服务器错误，请稍后重试')
+            break
+          default:
+            // 其他错误静默处理，避免频繁弹窗
+            console.warn('请求失败:', status, config?.url)
+        }
+      } else if (error.request) {
+        // 网络错误也静默处理，避免频繁弹窗
+        console.warn('网络错误:', config?.url)
+      } else {
+        message.error('请求配置错误')
       }
-    } else if (error.request) {
-      message.error('网络错误，请检查您的网络连接')
-    } else {
-      message.error('请求配置错误')
     }
     return Promise.reject(error)
   }

@@ -93,9 +93,17 @@
   background: #f0f2f5;
   min-height: calc(100vh - 64px - 24px);
   transition: margin-left 0.2s;
-  
+
   &.collapsed {
     margin-left: 96px;
+  }
+
+  // 数字工厂页面特殊样式 - 全屏无边距
+  :global {
+    .digitalFactory {
+      margin: -24px;
+      padding: 0;
+    }
   }
 }
 

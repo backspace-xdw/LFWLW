@@ -15,6 +15,9 @@ import Model3D from './pages/Model3D'
 import VehicleMonitor from './pages/VehicleMonitor'
 import GraphicsEditor from './pages/GraphicsEditor'
 import Demo3D from './pages/Demo3D'
+import DigitalFactory from './pages/DigitalFactory'
+import FactoryArea from './pages/FactoryArea'
+import DeviceDetail3D from './pages/DeviceDetail3D'
 import { useAuthStore } from './store/auth'
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -25,7 +28,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 function App() {
   return (
     <AntdApp>
-      <BrowserRouter>
+      <BrowserRouter basename="/">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/demo3d" element={<Demo3D />} />
@@ -47,6 +50,9 @@ function App() {
             <Route path="models" element={<Model3D />} />
             <Route path="graphics-editor" element={<GraphicsEditor />} />
             <Route path="vehicle-monitor" element={<VehicleMonitor />} />
+            <Route path="factory-area" element={<FactoryArea />} />
+            <Route path="digital-factory" element={<DigitalFactory />} />
+            <Route path="device-detail/:deviceId" element={<DeviceDetail3D />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="settings" element={<SystemSettings />} />
           </Route>

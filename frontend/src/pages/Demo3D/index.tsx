@@ -86,8 +86,8 @@ const DataPanel3D: React.FC<{ position: [number, number, number], data: any, tit
       </Billboard>
 
       {/* 数据面板 */}
-      <Html position={[position[0] + 1.5, position[1] + 0.3, position[2]]} distanceFactor={2}>
-        <div className={styles.dataCard}>
+      <Html position={[position[0] + 1.5, position[1] + 0.3, position[2]]} distanceFactor={2} style={{ pointerEvents: 'none' }}>
+        <div className={styles.dataCard} style={{ pointerEvents: 'none' }}>
           {data.data?.temperature && (
             <div className={styles.dataRow}>
               <span className={styles.label}>温度</span>
@@ -151,14 +151,14 @@ const Pump3D: React.FC<{ position: [number, number, number], data: any }> = ({ p
   const color = data?.data?.temperature > 85 ? '#ff4d4f' : '#52c41a'
 
   return (
-    <group position={position}>
-      <Cylinder ref={meshRef} args={[0.4, 0.4, 0.8, 8]}>
+    <group position={position} raycast={() => null}>
+      <Cylinder ref={meshRef} args={[0.4, 0.4, 0.8, 8]} raycast={() => null}>
         <meshStandardMaterial color={color} metalness={0.6} roughness={0.4} />
       </Cylinder>
-      <Torus args={[0.5, 0.1, 8, 16]} position={[0, 0, 0]}>
+      <Torus args={[0.5, 0.1, 8, 16]} position={[0, 0, 0]} raycast={() => null}>
         <meshStandardMaterial color="#666" metalness={0.8} roughness={0.2} />
       </Torus>
-      <Box args={[0.2, 1.2, 0.2]} position={[0.6, 0, 0]}>
+      <Box args={[0.2, 1.2, 0.2]} position={[0.6, 0, 0]} raycast={() => null}>
         <meshStandardMaterial color="#333" />
       </Box>
     </group>
@@ -170,20 +170,21 @@ const Tank3D: React.FC<{ position: [number, number, number], data: any }> = ({ p
   const level = data?.data?.level || 0
 
   return (
-    <group position={position}>
+    <group position={position} raycast={() => null}>
       {/* 罐体 */}
-      <Cylinder args={[0.8, 0.8, 2, 16]}>
+      <Cylinder args={[0.8, 0.8, 2, 16]} raycast={() => null}>
         <meshStandardMaterial color="#4096ff" metalness={0.3} roughness={0.5} transparent opacity={0.3} />
       </Cylinder>
       {/* 液位 */}
       <Cylinder
         args={[0.75, 0.75, 2 * (level / 100), 16]}
         position={[0, -1 + (2 * level / 100) / 2, 0]}
+        raycast={() => null}
       >
         <meshStandardMaterial color="#00bfff" />
       </Cylinder>
       {/* 顶部 */}
-      <Cone args={[0.8, 0.4, 16]} position={[0, 1.2, 0]}>
+      <Cone args={[0.8, 0.4, 16]} position={[0, 1.2, 0]} raycast={() => null}>
         <meshStandardMaterial color="#4096ff" metalness={0.5} roughness={0.3} />
       </Cone>
     </group>
@@ -201,14 +202,14 @@ const Valve3D: React.FC<{ position: [number, number, number], data: any }> = ({ 
   })
 
   return (
-    <group position={position}>
-      <Box args={[0.4, 0.3, 0.4]}>
+    <group position={position} raycast={() => null}>
+      <Box args={[0.4, 0.3, 0.4]} raycast={() => null}>
         <meshStandardMaterial color="#faad14" metalness={0.7} roughness={0.3} />
       </Box>
-      <Cylinder args={[0.15, 0.15, 0.6]} rotation={[0, 0, Math.PI / 2]}>
+      <Cylinder args={[0.15, 0.15, 0.6]} rotation={[0, 0, Math.PI / 2]} raycast={() => null}>
         <meshStandardMaterial color="#666" />
       </Cylinder>
-      <Cylinder ref={handleRef} args={[0.05, 0.05, 0.5]} position={[0, 0.25, 0]}>
+      <Cylinder ref={handleRef} args={[0.05, 0.05, 0.5]} position={[0, 0.25, 0]} raycast={() => null}>
         <meshStandardMaterial color="#ff4d4f" />
       </Cylinder>
     </group>
@@ -228,17 +229,17 @@ const Reactor3D: React.FC<{ position: [number, number, number], data: any }> = (
   const color = data?.data?.temperature > 95 ? '#ff4d4f' : '#722ed1'
 
   return (
-    <group position={position}>
-      <Sphere args={[0.8, 32, 32]}>
+    <group position={position} raycast={() => null}>
+      <Sphere args={[0.8, 32, 32]} raycast={() => null}>
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.3} />
       </Sphere>
-      <Cylinder args={[0.15, 0.15, 0.5]} position={[0, 1, 0]}>
+      <Cylinder args={[0.15, 0.15, 0.5]} position={[0, 1, 0]} raycast={() => null}>
         <meshStandardMaterial color="#666" />
       </Cylinder>
-      <Cylinder args={[0.15, 0.15, 0.5]} position={[0, -1, 0]}>
+      <Cylinder args={[0.15, 0.15, 0.5]} position={[0, -1, 0]} raycast={() => null}>
         <meshStandardMaterial color="#666" />
       </Cylinder>
-      <Torus ref={meshRef} args={[0.9, 0.05, 8, 32]} rotation={[Math.PI / 2, 0, 0]}>
+      <Torus ref={meshRef} args={[0.9, 0.05, 8, 32]} rotation={[Math.PI / 2, 0, 0]} raycast={() => null}>
         <meshStandardMaterial color="#faad14" emissive="#faad14" emissiveIntensity={0.3} />
       </Torus>
     </group>
@@ -328,11 +329,11 @@ const Demo3D: React.FC = () => {
             />
 
             {/* 地面 */}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} receiveShadow>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} receiveShadow raycast={() => null}>
               <planeGeometry args={[20, 20]} />
               <meshStandardMaterial color="#f0f0f0" />
             </mesh>
-            <gridHelper args={[20, 20]} position={[0, -0.99, 0]} />
+            <gridHelper args={[20, 20]} position={[0, -0.99, 0]} raycast={() => null} />
 
             {/* 设备模型 */}
             <Pump3D position={[-4, 0, 0]} data={deviceData.pump1} />

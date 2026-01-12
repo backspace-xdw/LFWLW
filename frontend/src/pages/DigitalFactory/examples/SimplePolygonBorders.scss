@@ -1,0 +1,205 @@
+.examples-container {
+  padding: 40px;
+  background: #0a1628;
+  min-height: 100vh;
+  color: #fff;
+
+  h2 {
+    text-align: center;
+    color: #00dcff;
+    margin-bottom: 40px;
+    font-size: 32px;
+    text-shadow: 0 0 10px rgba(0, 220, 255, 0.6);
+  }
+
+  .example-card {
+    margin-bottom: 60px;
+    background: rgba(10, 30, 50, 0.5);
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 150, 255, 0.2);
+
+    h3 {
+      color: #00dcff;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    pre {
+      background: #000;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      color: #0f0;
+      font-size: 12px;
+      margin-top: 20px;
+      border: 1px solid rgba(0, 255, 0, 0.2);
+    }
+
+    .content {
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+  }
+}
+
+/* ========== 示例1: 纯CSS梯形边框 ========== */
+.trapezoid-box-1 {
+  position: relative;
+  width: 600px;
+  height: 200px;
+  margin: 20px auto;
+  background: linear-gradient(135deg, rgba(6, 20, 40, 0.8) 0%, rgba(8, 25, 50, 0.9) 100%);
+
+  // 梯形裁剪
+  clip-path: polygon(8% 0%, 92% 0%, 98% 100%, 2% 100%);
+
+  // 发光边框效果
+  border: 2px solid rgba(0, 180, 255, 0.7);
+  box-shadow:
+    0 0 20px rgba(0, 180, 255, 0.5),
+    0 0 40px rgba(0, 180, 255, 0.3),
+    inset 0 0 20px rgba(0, 180, 255, 0.1);
+}
+
+/* ========== 示例2: 发光脉冲边框 ========== */
+.trapezoid-box-2 {
+  position: relative;
+  width: 600px;
+  height: 200px;
+  margin: 20px auto;
+  background: linear-gradient(135deg, rgba(6, 20, 40, 0.8) 0%, rgba(8, 25, 50, 0.9) 100%);
+  clip-path: polygon(10% 0%, 90% 0%, 95% 100%, 5% 100%);
+  border: 2px solid rgba(0, 180, 255, 0.7);
+
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+    border-color: rgba(0, 180, 255, 0.7);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(0, 180, 255, 0.9),
+      0 0 50px rgba(0, 180, 255, 0.6);
+    border-color: rgba(0, 220, 255, 1);
+  }
+}
+
+/* ========== 示例3: 四角装饰边框 ========== */
+.trapezoid-box-3 {
+  position: relative;
+  width: 600px;
+  height: 200px;
+  margin: 20px auto;
+  background: linear-gradient(135deg, rgba(6, 20, 40, 0.8) 0%, rgba(8, 25, 50, 0.9) 100%);
+  clip-path: polygon(10% 0%, 90% 0%, 95% 100%, 5% 100%);
+  border: 2px solid rgba(0, 150, 255, 0.5);
+
+  // 左上角
+  &::before {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 12%;
+    width: 30px;
+    height: 30px;
+    border-top: 3px solid #00dcff;
+    border-left: 3px solid #00dcff;
+    box-shadow: 0 0 10px rgba(0, 220, 255, 0.6);
+  }
+
+  // 右上角
+  &::after {
+    content: '';
+    position: absolute;
+    top: 5%;
+    right: 12%;
+    width: 30px;
+    height: 30px;
+    border-top: 3px solid #00dcff;
+    border-right: 3px solid #00dcff;
+    box-shadow: 0 0 10px rgba(0, 220, 255, 0.6);
+  }
+}
+
+/* ========== 示例4: 渐变边框 ========== */
+.trapezoid-box-4 {
+  position: relative;
+  width: 600px;
+  height: 200px;
+  margin: 20px auto;
+  clip-path: polygon(10% 0%, 90% 0%, 95% 100%, 5% 100%);
+
+  background:
+    linear-gradient(#0a1628, #0a1628) padding-box,
+    linear-gradient(135deg, #00dcff, #0096ff, #00dcff) border-box;
+  border: 3px solid transparent;
+
+  box-shadow:
+    0 0 20px rgba(0, 180, 255, 0.4),
+    inset 0 0 20px rgba(0, 180, 255, 0.1);
+
+  animation: gradientRotate 3s linear infinite;
+}
+
+@keyframes gradientRotate {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* ========== 示例5: 扫描线效果 ========== */
+.trapezoid-box-5 {
+  position: relative;
+  width: 600px;
+  height: 200px;
+  margin: 20px auto;
+  background: linear-gradient(135deg, rgba(6, 20, 40, 0.8) 0%, rgba(8, 25, 50, 0.9) 100%);
+  clip-path: polygon(10% 0%, 90% 0%, 95% 100%, 5% 100%);
+  border: 2px solid rgba(0, 180, 255, 0.7);
+  overflow: hidden;
+
+  box-shadow:
+    0 0 20px rgba(0, 180, 255, 0.5),
+    inset 0 0 20px rgba(0, 180, 255, 0.1);
+
+  .scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(0, 220, 255, 0.8) 50%,
+      transparent 100%
+    );
+    box-shadow: 0 0 10px rgba(0, 220, 255, 0.8);
+    animation: scan 3s linear infinite;
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}

@@ -76,3 +76,18 @@ frontend/public/models/*.json
 
 # Keep thumbnails
 !frontend/public/models/thumbnails/
+# Large files - excluded from GitHub
+*.zip
+*.tar.gz
+*.max
+*.fbx
+*.FBX
+化工厂厂房工业设备_知末3D模型ID_1149038059/
+smarthouse/
+smarthouse-glb/
+
+# Root level images and temp files
+/*.png
+/*.jpg
+/*.jpg!bg
+lfwlw-deploy.tar.gz

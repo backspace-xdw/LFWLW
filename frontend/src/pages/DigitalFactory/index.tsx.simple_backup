@@ -1,0 +1,1847 @@
+import React, { useEffect, useState, useRef } from 'react'
+import { Card, Row, Col, Statistic, Progress } from 'antd'
+import {
+  ApiOutlined,
+  ThunderboltOutlined,
+  TeamOutlined,
+  AlertOutlined,
+} from '@ant-design/icons'
+import { Line, Column } from '@ant-design/plots'
+import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import {
+  createDetailedBoxOpener,
+  createDetailedMetalDetector,
+  createDetailedXRayInspector,
+  createDetailedCheckweigher,
+  createDetailedSlicer,
+  createDetailedPacker,
+  createDetailedPalletizer,
+  createDetailedLaminator,
+  createRealisticRollerConveyor
+} from './EquipmentModels'
+import styles from './index.module.scss'
+
+const DigitalFactory: React.FC = () => {
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const mountRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Initialize 3D scene
+  useEffect(() => {
+    if (!mountRef.current) return
+
+    // Scene setup
+    const scene = new THREE.Scene()
+    scene.background = new THREE.Color(0x0a1628)
+    scene.fog = new THREE.Fog(0x0a1628, 50, 200)
+
+    // Camera setup - 调整视角以俯瞰整个工厂布局
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      mountRef.current.clientWidth / mountRef.current.clientHeight,
+      0.1,
+      1000
+    )
+    camera.position.set(0, 50, 40)  // 更高的俯视角度，聚焦工厂中心
+
+    // Renderer setup - 禁用阴影提高性能
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true })
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight)
+    renderer.shadowMap.enabled = false  // 禁用阴影以提高性能
+    mountRef.current.appendChild(renderer.domElement)
+
+    // Controls
+    const controls = new OrbitControls(camera, renderer.domElement)
+    controls.enableDamping = true
+    controls.dampingFactor = 0.05
+    controls.autoRotate = false  // 禁用自动旋转
+
+    // 启用平移功能 - 可以拖拽移动场景中心
+    controls.enablePan = true
+    controls.panSpeed = 1.0
+    controls.screenSpacePanning = false  // 使用世界空间平移，保持在水平面上
+
+    // 鼠标按键设置：左键平移（拖拽），右键旋转，滚轮缩放
+    // 这样可以用左键拖拽某个位置到中心，然后滚轮放大缩小
+    controls.mouseButtons = {
+      LEFT: THREE.MOUSE.PAN,      // 左键拖拽平移
+      MIDDLE: THREE.MOUSE.DOLLY,  // 中键缩放
+      RIGHT: THREE.MOUSE.ROTATE   // 右键旋转
+    }
+
+    // 缩放设置
+    controls.enableZoom = true
+    controls.zoomSpeed = 1.0
+    controls.minDistance = 5   // 最小缩放距离
+    controls.maxDistance = 100 // 最大缩放距离
+
+    // Enhanced Lighting - 工业环境照明
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3)
+    scene.add(ambientLight)
+
+    // 主光源 - 模拟顶部工业照明
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2)
+    mainLight.position.set(20, 40, 30)
+    mainLight.castShadow = true
+    mainLight.shadow.mapSize.width = 2048
+    mainLight.shadow.mapSize.height = 2048
+    mainLight.shadow.camera.left = -50
+    mainLight.shadow.camera.right = 50
+    mainLight.shadow.camera.top = 50
+    mainLight.shadow.camera.bottom = -50
+    scene.add(mainLight)
+
+    // 辅助光源
+    const fillLight = new THREE.DirectionalLight(0x3498db, 0.4)
+    fillLight.position.set(-30, 20, -20)
+    scene.add(fillLight)
+
+    // 点光源增强设备照明
+    const spotlights = [
+      { pos: [-30, 15, -15], color: 0xffffff },
+      { pos: [0, 15, 0], color: 0xffffff },
+      { pos: [25, 15, 0], color: 0xffffff }
+    ]
+
+    spotlights.forEach(({ pos, color }) => {
+      const light = new THREE.PointLight(color, 0.6, 30)
+      light.position.set(...pos)
+      light.castShadow = true
+      scene.add(light)
+    })
+
+    // Create realistic 3D equipment models
+    const createRealisticEquipment = () => {
+      // 材质定义
+      const materials = {
+        metal: new THREE.MeshStandardMaterial({
+          color: 0x8e8e8e,
+          metalness: 0.8,
+          roughness: 0.2
+        }),
+        metalDark: new THREE.MeshStandardMaterial({
+          color: 0x505050,
+          metalness: 0.9,
+          roughness: 0.3
+        }),
+        plastic: new THREE.MeshStandardMaterial({
+          color: 0x2c3e50,
+          metalness: 0.1,
+          roughness: 0.7
+        }),
+        glass: new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0.1,
+          transmission: 0.9,
+          transparent: true,
+          opacity: 0.3
+        }),
+        rubber: new THREE.MeshStandardMaterial({
+          color: 0x1a1a1a,
+          metalness: 0,
+          roughness: 0.9
+        })
+      }
+
+      // 创建开箱机 (KCKX20)
+      const createBoxOpener = () => {
+        const machine = new THREE.Group()
+
+        // 主机身
+        const mainBody = new THREE.Mesh(
+          new THREE.BoxGeometry(3.1, 1.2, 3.5),
+          materials.metal
+        )
+        mainBody.position.y = 0.6
+        mainBody.castShadow = true
+        machine.add(mainBody)
+
+        // 顶部罩壳
+        const topCover = new THREE.Mesh(
+          new THREE.BoxGeometry(3.2, 0.3, 3.6),
+          materials.plastic
+        )
+        topCover.position.y = 1.35
+        topCover.castShadow = true
+        machine.add(topCover)
+
+        // 开箱机构 (V型推板)
+        for (let i = 0; i < 4; i++) {
+          const pusher = new THREE.Mesh(
+            new THREE.BoxGeometry(0.1, 0.8, 1.5),
+            materials.metalDark
+          )
+          pusher.position.set(-1.2 + i * 0.8, 0.6, 0)
+          pusher.castShadow = true
+          machine.add(pusher)
+        }
+
+        // 输送辊轴
+        for (let i = 0; i < 8; i++) {
+          const roller = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.05, 0.05, 3.4, 16),
+            materials.rubber
+          )
+          roller.rotation.z = Math.PI / 2
+          roller.position.set(-1.3 + i * 0.35, 0.1, 0)
+          machine.add(roller)
+        }
+
+        // 控制面板
+        const controlPanel = new THREE.Mesh(
+          new THREE.BoxGeometry(0.4, 0.6, 0.3),
+          materials.plastic
+        )
+        controlPanel.position.set(1.6, 1, 1.5)
+        machine.add(controlPanel)
+
+        // 状态指示灯
+        const statusLight = new THREE.Mesh(
+          new THREE.SphereGeometry(0.05, 16, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0x00ff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 1
+          })
+        )
+        statusLight.position.set(1.6, 1.4, 1.5)
+        machine.add(statusLight)
+
+        return machine
+      }
+
+      // 创建切片机 (Slicer)
+      const createSlicer = (type = 'RTU') => {
+        const machine = new THREE.Group()
+
+        // 主机架
+        const frame = new THREE.Mesh(
+          new THREE.BoxGeometry(2.5, 2, 1.5),
+          materials.metal
+        )
+        frame.position.y = 1
+        frame.castShadow = true
+        machine.add(frame)
+
+        // 切割平台
+        const platform = new THREE.Mesh(
+          new THREE.BoxGeometry(2.3, 0.15, 1.3),
+          materials.metalDark
+        )
+        platform.position.y = 0.5
+        machine.add(platform)
+
+        // 切割刀组 (多片刀片)
+        for (let i = 0; i < 10; i++) {
+          const blade = new THREE.Mesh(
+            new THREE.BoxGeometry(0.02, 1.2, 1),
+            new THREE.MeshStandardMaterial({
+              color: 0xc0c0c0,
+              metalness: 1,
+              roughness: 0.1
+            })
+          )
+          blade.position.set(-1 + i * 0.22, 1.5, 0)
+          machine.add(blade)
+        }
+
+        // 电机
+        const motor = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.25, 0.25, 0.5, 16),
+          materials.metalDark
+        )
+        motor.rotation.z = Math.PI / 2
+        motor.position.set(1.3, 1.8, 0)
+        machine.add(motor)
+
+        // 通讯模块标识
+        const commModule = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 0.2, 0.2),
+          new THREE.MeshStandardMaterial({
+            color: type === 'RTU' ? 0x2ecc71 : 0x27ae60
+          })
+        )
+        commModule.position.set(0, 2.2, 0.7)
+        machine.add(commModule)
+
+        // 状态灯
+        const light = new THREE.PointLight(
+          type === 'RTU' ? 0x2ecc71 : 0x27ae60,
+          0.5,
+          5
+        )
+        light.position.set(0, 2.5, 0)
+        machine.add(light)
+
+        return machine
+      }
+
+      // 创建装箱机 (ZX15)
+      const createPacker = (mirrored = false) => {
+        const machine = new THREE.Group()
+
+        // 主机架
+        const mainFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(6.2, 2.784, 1.48),
+          materials.metal
+        )
+        mainFrame.position.y = 1.392
+        mainFrame.castShadow = true
+        machine.add(mainFrame)
+
+        // 纸箱成型区
+        const formingArea = new THREE.Mesh(
+          new THREE.BoxGeometry(1.5, 1.5, 1.2),
+          materials.glass
+        )
+        formingArea.position.set(-2, 1.5, 0)
+        machine.add(formingArea)
+
+        // 产品推送机构
+        for (let i = 0; i < 3; i++) {
+          const pusher = new THREE.Mesh(
+            new THREE.BoxGeometry(0.2, 0.3, 0.8),
+            materials.metalDark
+          )
+          pusher.position.set(-1 + i * 2, 1.2, 0)
+          machine.add(pusher)
+        }
+
+        // 封箱胶带头
+        const tapeHead = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.15, 0.15, 0.6, 16),
+          materials.plastic
+        )
+        tapeHead.rotation.z = Math.PI / 2
+        tapeHead.position.set(2.5, 2, 0)
+        machine.add(tapeHead)
+
+        // 输送带
+        const conveyor = new THREE.Mesh(
+          new THREE.BoxGeometry(6, 0.1, 0.8),
+          materials.rubber
+        )
+        conveyor.position.y = 0.05
+        machine.add(conveyor)
+
+        // 控制柜
+        const cabinet = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 1.8, 0.5),
+          materials.plastic
+        )
+        cabinet.position.set(mirrored ? 3.5 : -3.5, 0.9, 1)
+        machine.add(cabinet)
+
+        // 触摸屏
+        const hmi = new THREE.Mesh(
+          new THREE.BoxGeometry(0.4, 0.3, 0.05),
+          new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            emissive: 0x3498db,
+            emissiveIntensity: 0.5
+          })
+        )
+        hmi.position.set(mirrored ? 3.5 : -3.5, 1.5, 1.3)
+        machine.add(hmi)
+
+        return machine
+      }
+
+      // 创建码垛机 (Palletizer)
+      const createPalletizer = () => {
+        const machine = new THREE.Group()
+
+        // 底座
+        const base = new THREE.Mesh(
+          new THREE.BoxGeometry(4, 0.5, 3),
+          materials.metal
+        )
+        base.position.y = 0.25
+        base.castShadow = true
+        machine.add(base)
+
+        // 立柱
+        const column = new THREE.Mesh(
+          new THREE.BoxGeometry(0.4, 6, 0.4),
+          materials.metalDark
+        )
+        column.position.y = 3
+        column.castShadow = true
+        machine.add(column)
+
+        // 横梁 (可移动)
+        const beam = new THREE.Mesh(
+          new THREE.BoxGeometry(3.5, 0.3, 0.3),
+          materials.metal
+        )
+        beam.position.y = 5
+        beam.castShadow = true
+        machine.add(beam)
+
+        // 抓取机械手
+        const gripper = new THREE.Group()
+        const gripperArm = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 2, 0.3),
+          materials.metalDark
+        )
+        gripperArm.position.y = 4
+        gripper.add(gripperArm)
+
+        // 夹爪
+        for (let i = 0; i < 4; i++) {
+          const finger = new THREE.Mesh(
+            new THREE.BoxGeometry(0.8, 0.15, 0.1),
+            materials.metal
+          )
+          const angle = (i / 4) * Math.PI * 2
+          finger.position.x = Math.cos(angle) * 0.5
+          finger.position.z = Math.sin(angle) * 0.5
+          finger.position.y = 3
+          gripper.add(finger)
+        }
+        machine.add(gripper)
+
+        // 传感器阵列
+        for (let i = 0; i < 6; i++) {
+          const sensor = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.05, 0.05, 0.1, 8),
+            new THREE.MeshStandardMaterial({
+              color: 0xff0000,
+              emissive: 0xff0000,
+              emissiveIntensity: 0.5
+            })
+          )
+          sensor.position.set(-1.5 + i * 0.5, 5.5, 0.3)
+          machine.add(sensor)
+        }
+
+        return machine
+      }
+
+      // 创建覆膜机 (Laminator)
+      const createLaminator = () => {
+        const machine = new THREE.Group()
+
+        // 主机身
+        const body = new THREE.Mesh(
+          new THREE.BoxGeometry(3.5, 2.2, 2),
+          materials.metal
+        )
+        body.position.y = 1.1
+        body.castShadow = true
+        machine.add(body)
+
+        // 上加热辊
+        const upperRoller = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.2, 0.2, 1.8, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0xff6600,
+            emissive: 0xff3300,
+            emissiveIntensity: 0.3
+          })
+        )
+        upperRoller.rotation.z = Math.PI / 2
+        upperRoller.position.set(0, 1.8, 0)
+        machine.add(upperRoller)
+
+        // 下加热辊
+        const lowerRoller = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.2, 0.2, 1.8, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0xff6600,
+            emissive: 0xff3300,
+            emissiveIntensity: 0.3
+          })
+        )
+        lowerRoller.rotation.z = Math.PI / 2
+        lowerRoller.position.set(0, 0.4, 0)
+        machine.add(lowerRoller)
+
+        // 膜卷支架
+        const filmRoll = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.3, 0.3, 0.4, 16),
+          materials.plastic
+        )
+        filmRoll.rotation.z = Math.PI / 2
+        filmRoll.position.set(-1.5, 2.5, 0)
+        machine.add(filmRoll)
+
+        // 膜卷本体
+        const film = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.25, 0.25, 0.35, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.7
+          })
+        )
+        film.rotation.z = Math.PI / 2
+        film.position.set(-1.5, 2.5, 0)
+        machine.add(film)
+
+        // 温度传感器
+        for (let i = 0; i < 3; i++) {
+          const sensor = new THREE.Mesh(
+            new THREE.BoxGeometry(0.1, 0.1, 0.1),
+            new THREE.MeshStandardMaterial({
+              color: 0x1abc9c,
+              emissive: 0x1abc9c,
+              emissiveIntensity: 0.8
+            })
+          )
+          sensor.position.set(-0.8 + i * 0.8, 1.8, 1)
+          machine.add(sensor)
+        }
+
+        return machine
+      }
+
+      // 创建输送带段
+      const createConveyor = (length, width) => {
+        const conveyor = new THREE.Group()
+
+        // 支架
+        const frameLeft = new THREE.Mesh(
+          new THREE.BoxGeometry(0.1, 0.4, length),
+          materials.metal
+        )
+        frameLeft.position.set(-width / 2, 0.2, 0)
+        conveyor.add(frameLeft)
+
+        const frameRight = new THREE.Mesh(
+          new THREE.BoxGeometry(0.1, 0.4, length),
+          materials.metal
+        )
+        frameRight.position.set(width / 2, 0.2, 0)
+        conveyor.add(frameRight)
+
+        // 滚筒
+        const rollerCount = Math.floor(length / 0.3)
+        for (let i = 0; i < rollerCount; i++) {
+          const roller = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.05, 0.05, width, 16),
+            materials.rubber
+          )
+          roller.rotation.z = Math.PI / 2
+          roller.position.set(0, 0.15, -length / 2 + i * 0.3)
+          conveyor.add(roller)
+        }
+
+        return conveyor
+      }
+
+      return {
+        createBoxOpener,
+        createSlicer,
+        createPacker,
+        createPalletizer,
+        createLaminator,
+        createConveyor
+      }
+    }
+
+    // Create TFF factory with realistic equipment - 根据TTF工厂平面图布局
+    const createFactory = () => {
+      const group = new THREE.Group()
+      const equipment = createRealisticEquipment()
+
+      // === 根据平面图的布局重新规划 ===
+      // 平面图坐标映射：左上为原点，X向右，Z向下
+      // 3D场景坐标：中心为原点，X向右，Z向前（-Z向后）
+
+      // 1. 底部切片机阵列区域 - 高性能版本
+      const createBottomSlicingArea = () => {
+        const area = new THREE.Group()
+
+        // 底部1排6台（大幅减少）
+        for (let col = 0; col < 6; col++) {
+          const slicer = createDetailedSlicer()
+          slicer.position.set(-25 + col * 10, 0, -22)
+          area.add(slicer)
+        }
+
+        // 底部传送带（只保留2段）
+        const conv1 = createRealisticRollerConveyor(30, 0.8)
+        conv1.position.set(-10, 0, -20)
+        conv1.rotation.y = 0
+        area.add(conv1)
+
+        return area
+      }
+
+      // 2. 中心生产线区域 - 高性能版本
+      const createCentralProductionArea = () => {
+        const area = new THREE.Group()
+
+        // 中心切片机组 - 减少到1排4台
+        for (let col = 0; col < 4; col++) {
+          const slicer = createDetailedSlicer()
+          slicer.position.set(-15 + col * 10, 0, 0)
+          area.add(slicer)
+        }
+
+        // 纵向主传送带 - 只保留1段
+        const conv1 = createRealisticRollerConveyor(15, 0.7)
+        conv1.position.set(-5, 0, -8)
+        conv1.rotation.y = Math.PI / 2
+        area.add(conv1)
+
+        return area
+      }
+
+      // 3. 左侧检测与包装进线区 (ZONE 9附近)
+      const createLeftInspectionArea = () => {
+        const area = new THREE.Group()
+
+        // 开箱机 KCKX20
+        const boxOpener = createDetailedBoxOpener()
+        boxOpener.position.set(-35, 0, 8)
+        area.add(boxOpener)
+
+        // 金属检测机 M001, M002
+        const metalDetector1 = createDetailedMetalDetector()
+        metalDetector1.position.set(-30, 0, 8)
+        area.add(metalDetector1)
+
+        const metalDetector2 = createDetailedMetalDetector()
+        metalDetector2.position.set(-26, 0, 8)
+        area.add(metalDetector2)
+
+        // X光检测系统 M003
+        const xrayInspector = createDetailedXRayInspector()
+        xrayInspector.position.set(-22, 0, 8)
+        area.add(xrayInspector)
+
+        // 检重秤 M004
+        const checkweigher = createDetailedCheckweigher()
+        checkweigher.position.set(-18, 0, 8)
+        area.add(checkweigher)
+
+        // 检测区传送带（横向连接）
+        for (let i = 0; i < 5; i++) {
+          const conv = createRealisticRollerConveyor(3.5, 0.65)
+          conv.position.set(-33 + i * 4, 0, 8)
+          conv.rotation.y = 0  // 横向
+          area.add(conv)
+        }
+
+        return area
+      }
+
+      // 4. 装箱与封箱区域 - 高性能版本
+      const createPackingArea = () => {
+        const area = new THREE.Group()
+
+        // 装箱机 - 只保留2台
+        const packer1 = createDetailedPacker()
+        packer1.position.set(-10, 0, 12)
+        area.add(packer1)
+
+        const packer2 = createDetailedPacker()
+        packer2.position.set(5, 0, 12)
+        area.add(packer2)
+
+        // 装箱区输送带
+        const conv1 = createRealisticRollerConveyor(20, 0.8)
+        conv1.position.set(-3, 0, 14)
+        conv1.rotation.y = 0
+        area.add(conv1)
+
+        return area
+      }
+
+      // 5. 右侧成品区与码垛区 - 高性能版本
+      const createFinishedProductArea = () => {
+        const area = new THREE.Group()
+
+        // 码垛机器人 - 只保留1台
+        const palletizer1 = createDetailedPalletizer()
+        palletizer1.position.set(25, 0, 10)
+        area.add(palletizer1)
+
+        // 成品区传送带
+        const conv1 = createRealisticRollerConveyor(15, 0.8)
+        conv1.position.set(18, 0, 12)
+        conv1.rotation.y = 0
+        area.add(conv1)
+
+        return area
+      }
+
+      // 创建模块化紧凑型纸箱供料单元 - 基于平面图设计
+      const createFeederDevice = () => {
+        const feeder = new THREE.Group()
+
+        // 材质定义
+        const frameMaterial = new THREE.MeshStandardMaterial({
+          color: 0x34495e,
+          metalness: 0.6,
+          roughness: 0.4
+        })
+
+        const metalMaterial = new THREE.MeshStandardMaterial({
+          color: 0x95a5a6,
+          metalness: 0.8,
+          roughness: 0.3
+        })
+
+        const accentMaterial = new THREE.MeshStandardMaterial({
+          color: 0x3498db,
+          metalness: 0.4,
+          roughness: 0.6
+        })
+
+        // 尺寸参数 - 紧凑型模块化设计（类似平面图单元格）
+        const unitWidth = 0.8
+        const unitLength = 1.8
+        const unitHeight = 0.8
+        const frameThickness = 0.03
+
+        // 底座平台
+        const baseGeometry = new THREE.BoxGeometry(unitWidth, 0.05, unitLength)
+        const base = new THREE.Mesh(baseGeometry, frameMaterial)
+        base.position.y = 0.025
+        base.castShadow = true
+        feeder.add(base)
+
+        // 主体箱柜 - 矩形单元
+        const bodyGeometry = new THREE.BoxGeometry(unitWidth - 0.08, unitHeight * 0.65, unitLength - 0.08)
+        const body = new THREE.Mesh(bodyGeometry, metalMaterial)
+        body.position.y = unitHeight * 0.35
+        body.castShadow = true
+        feeder.add(body)
+
+        // 顶部出料口
+        const outletGeometry = new THREE.BoxGeometry(unitWidth * 0.4, 0.08, unitLength * 0.3)
+        const outlet = new THREE.Mesh(outletGeometry, frameMaterial)
+        outlet.position.set(0, unitHeight * 0.72, unitLength * 0.35)
+        feeder.add(outlet)
+
+        // 蓝色标识条
+        const accentGeometry = new THREE.BoxGeometry(unitWidth * 0.9, 0.06, 0.02)
+        const accent = new THREE.Mesh(accentGeometry, accentMaterial)
+        accent.position.set(0, unitHeight * 0.6, unitLength / 2)
+        feeder.add(accent)
+
+        // 四角支撑腿
+        const legGeometry = new THREE.BoxGeometry(frameThickness * 1.5, unitHeight * 0.15, frameThickness * 1.5)
+        const legPositions = [
+          [-unitWidth / 2 + 0.08, unitHeight * 0.075, -unitLength / 2 + 0.08],
+          [unitWidth / 2 - 0.08, unitHeight * 0.075, -unitLength / 2 + 0.08],
+          [-unitWidth / 2 + 0.08, unitHeight * 0.075, unitLength / 2 - 0.08],
+          [unitWidth / 2 - 0.08, unitHeight * 0.075, unitLength / 2 - 0.08]
+        ]
+        legPositions.forEach(pos => {
+          const leg = new THREE.Mesh(legGeometry, frameMaterial)
+          leg.position.set(...pos)
+          feeder.add(leg)
+        })
+
+        // 状态指示灯
+        const ledGeometry = new THREE.SphereGeometry(0.01, 12, 12)
+        const ledColors = [0x00ff00, 0xffcc00]
+        ledColors.forEach((color, i) => {
+          const ledMaterial = new THREE.MeshStandardMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: 1.5
+          })
+          const led = new THREE.Mesh(ledGeometry, ledMaterial)
+          led.position.set(unitWidth / 2 - 0.08, unitHeight * 0.65, unitLength / 2 - 0.05 - i * 0.04)
+          feeder.add(led)
+        })
+
+        return feeder
+      }
+
+      // 创建纸箱原料堆放区
+      const createMaterialStack = () => {
+        const stack = new THREE.Group()
+
+        // 纸箱材质定义
+        const boxMaterial = new THREE.MeshStandardMaterial({
+          color: 0xd4a574,  // 牛皮纸箱颜色
+          metalness: 0.1,
+          roughness: 0.9
+        })
+
+        const boxTapeMaterial = new THREE.MeshStandardMaterial({
+          color: 0x8b7355,  // 封箱胶带颜色
+          metalness: 0.2,
+          roughness: 0.7
+        })
+
+        const palletMaterial = new THREE.MeshStandardMaterial({
+          color: 0x8b6f47,  // 木托盘颜色
+          metalness: 0.0,
+          roughness: 0.95
+        })
+
+        // 托盘底座
+        const palletWidth = 1.2
+        const palletLength = 1.0
+        const palletHeight = 0.15
+
+        // 托盘底板
+        const palletBaseGeometry = new THREE.BoxGeometry(palletWidth, 0.03, palletLength)
+        const palletBase = new THREE.Mesh(palletBaseGeometry, palletMaterial)
+        palletBase.position.y = 0.015
+        stack.add(palletBase)
+
+        // 托盘脚（9个）
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            const legGeometry = new THREE.BoxGeometry(0.1, 0.12, 0.1)
+            const leg = new THREE.Mesh(legGeometry, palletMaterial)
+            leg.position.set(
+              -palletWidth / 2 + 0.2 + i * (palletWidth - 0.4) / 2,
+              0.06,
+              -palletLength / 2 + 0.15 + j * (palletLength - 0.3) / 2
+            )
+            stack.add(leg)
+          }
+        }
+
+        // 托盘顶板
+        const palletTop = new THREE.Mesh(palletBaseGeometry, palletMaterial)
+        palletTop.position.y = 0.13
+        stack.add(palletTop)
+
+        // 堆叠纸箱（3层x3列x2排 = 18个纸箱）
+        const boxWidth = 0.35
+        const boxHeight = 0.25
+        const boxDepth = 0.3
+
+        for (let layer = 0; layer < 3; layer++) {
+          for (let row = 0; row < 2; row++) {
+            for (let col = 0; col < 3; col++) {
+              // 纸箱主体
+              const boxGeometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth)
+              const box = new THREE.Mesh(boxGeometry, boxMaterial)
+
+              // 添加微小的随机偏移，使堆叠看起来更自然
+              const randomOffsetX = (Math.random() - 0.5) * 0.01
+              const randomOffsetZ = (Math.random() - 0.5) * 0.01
+
+              box.position.set(
+                -palletWidth / 2 + 0.25 + col * 0.38 + randomOffsetX,
+                palletHeight + boxHeight / 2 + layer * boxHeight,
+                -palletLength / 2 + 0.25 + row * 0.45 + randomOffsetZ
+              )
+
+              // 微小旋转使其更自然
+              box.rotation.y = (Math.random() - 0.5) * 0.05
+
+              box.castShadow = true
+              stack.add(box)
+
+              // 封箱胶带（横向）
+              const tapeHGeometry = new THREE.BoxGeometry(boxWidth * 1.02, 0.008, 0.05)
+              const tapeH = new THREE.Mesh(tapeHGeometry, boxTapeMaterial)
+              tapeH.position.copy(box.position)
+              tapeH.position.y += boxHeight / 2 + 0.004
+              stack.add(tapeH)
+
+              // 封箱胶带（纵向）
+              const tapeVGeometry = new THREE.BoxGeometry(0.05, 0.008, boxDepth * 1.02)
+              const tapeV = new THREE.Mesh(tapeVGeometry, boxTapeMaterial)
+              tapeV.position.copy(box.position)
+              tapeV.position.y += boxHeight / 2 + 0.004
+              stack.add(tapeV)
+
+              // 纸箱纹理线条（模拟瓦楞纸）
+              for (let k = 0; k < 5; k++) {
+                const lineGeometry = new THREE.BoxGeometry(boxWidth * 0.95, 0.002, 0.01)
+                const line = new THREE.Mesh(lineGeometry, new THREE.MeshStandardMaterial({
+                  color: 0xc09060,
+                  metalness: 0.1,
+                  roughness: 0.95
+                }))
+                line.position.copy(box.position)
+                line.position.z += boxDepth / 2 + 0.001
+                line.position.y += -boxHeight / 2 + 0.05 + k * 0.11
+                stack.add(line)
+              }
+            }
+          }
+        }
+
+        // 警示标签牌
+        const signGeometry = new THREE.BoxGeometry(0.15, 0.2, 0.01)
+        const signMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffcc00,
+          emissive: 0xff9900,
+          emissiveIntensity: 0.3
+        })
+        const sign = new THREE.Mesh(signGeometry, signMaterial)
+        sign.position.set(0, 0.5, palletLength / 2 + 0.02)
+        stack.add(sign)
+
+        // 标签文字背景（白色）
+        const labelGeometry = new THREE.BoxGeometry(0.25, 0.08, 0.005)
+        const labelMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 1
+        })
+        const label = new THREE.Mesh(labelGeometry, labelMaterial)
+        label.position.set(0, 0.35, palletLength / 2 + 0.03)
+        stack.add(label)
+
+        return stack
+      }
+
+      // 创建180度圆弧形传送带（样式与直线传送带一致）
+      const createCurvedConveyor = (radius = 3.0, width = 0.8) => {
+        const curved = new THREE.Group()
+
+        // 材质定义 - 与直线传送带完全一致
+        const frameMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc9b583,  // 米黄色/金色不锈钢
+          metalness: 0.7,
+          roughness: 0.3
+        })
+
+        const rollerMaterial = new THREE.MeshStandardMaterial({
+          color: 0x1a1a1a,  // 黑色橡胶
+          metalness: 0,
+          roughness: 0.95
+        })
+
+        const beltMaterial = new THREE.MeshStandardMaterial({
+          color: 0x2a2a2a,  // 黑色橡胶皮带
+          metalness: 0,
+          roughness: 0.9,
+          side: THREE.DoubleSide  // 双面渲染
+        })
+
+        const legMaterial = new THREE.MeshStandardMaterial({
+          color: 0xa0a0a0,  // 灰色金属腿
+          metalness: 0.6,
+          roughness: 0.4
+        })
+
+        const elevationHeight = 0.35  // 与直线传送带高度一致
+        const frameHeight = 0.18      // 与直线传送带框架高度一致
+        const frameWidth = 0.03       // 框架宽度
+        const rollerDiameter = 0.05   // 滚筒直径
+
+        // 使用180度半圆弧路径创建框架
+        const arcAngle = Math.PI  // 180度
+        const outerRadius = radius + width / 2
+        const innerRadius = radius - width / 2
+
+        // 创建180度半圆弧路径（向-X方向凸起）
+        const createArcCurve = (r: number) => {
+          const points = []
+          const segments = 64
+          for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI  // 从0到PI
+            points.push(new THREE.Vector3(
+              -r * Math.sin(angle),  // 向-X方向凸起
+              0,
+              r * Math.cos(angle)    // Z从+r到-r
+            ))
+          }
+          return new THREE.CatmullRomCurve3(points)
+        }
+
+        // 创建垂直立着的连续圆弧形金属框架
+        // 外侧框架 - 使用圆弧内外两个半径定义框架厚度
+        const outerFrameVertices = []
+        const outerFrameIndices = []
+        const segments = 128
+
+        // 框架向内延伸的宽度（与直线传送带框架厚度一致）
+        const frameDepth = frameWidth  // 0.03米，与直线传送带一致
+
+        for (let i = 0; i <= segments; i++) {
+          const angle = (i / segments) * Math.PI  // 从0到PI
+
+          // 外圈边缘（传送带外边界）
+          const outerX = -outerRadius * Math.sin(angle)  // 向-X方向凸起
+          const outerZ = outerRadius * Math.cos(angle)   // Z从+r到-r
+
+          // 内圈边缘（外侧框架的内边界 = outerRadius - frameDepth）
+          const innerR = outerRadius - frameDepth
+          const innerX = -innerR * Math.sin(angle)  // 向-X方向凸起
+          const innerZ = innerR * Math.cos(angle)   // Z从+r到-r
+
+          // 每个角度创建4个顶点（外侧下、外侧上、内侧下、内侧上）
+          outerFrameVertices.push(outerX, elevationHeight, outerZ)  // 外侧下
+          outerFrameVertices.push(outerX, elevationHeight + frameHeight, outerZ)  // 外侧上
+          outerFrameVertices.push(innerX, elevationHeight, innerZ)  // 内侧下
+          outerFrameVertices.push(innerX, elevationHeight + frameHeight, innerZ)  // 内侧上
+        }
+
+        // 创建三角形面
+        for (let i = 0; i < segments; i++) {
+          const base = i * 4
+          const next = (i + 1) * 4
+
+          // 外侧面（面向传送带外部）
+          outerFrameIndices.push(base, next, base + 1)
+          outerFrameIndices.push(base + 1, next, next + 1)
+
+          // 内侧面（面向传送带内部）
+          outerFrameIndices.push(base + 2, base + 3, next + 2)
+          outerFrameIndices.push(base + 3, next + 3, next + 2)
+
+          // 顶面
+          outerFrameIndices.push(base + 1, next + 1, base + 3)
+          outerFrameIndices.push(base + 3, next + 1, next + 3)
+
+          // 底面
+          outerFrameIndices.push(base, base + 2, next)
+          outerFrameIndices.push(base + 2, next + 2, next)
+        }
+
+        const outerFrameGeo = new THREE.BufferGeometry()
+        outerFrameGeo.setAttribute('position', new THREE.Float32BufferAttribute(outerFrameVertices, 3))
+        outerFrameGeo.setIndex(outerFrameIndices)
+        outerFrameGeo.computeVertexNormals()
+
+        const outerFrame = new THREE.Mesh(outerFrameGeo, frameMaterial)
+        outerFrame.castShadow = true
+        curved.add(outerFrame)
+
+        // 内侧框架
+        const innerFrameVertices = []
+        const innerFrameIndices = []
+
+        for (let i = 0; i <= segments; i++) {
+          const angle = (i / segments) * Math.PI  // 从0到PI
+
+          // 内圈边缘（传送带内边界）
+          const innerX = -innerRadius * Math.sin(angle)  // 向-X方向凸起
+          const innerZ = innerRadius * Math.cos(angle)   // Z从+r到-r
+
+          // 外圈边缘（内侧框架的外边界 = innerRadius + frameDepth）
+          const outerR = innerRadius + frameDepth
+          const outerX = -outerR * Math.sin(angle)  // 向-X方向凸起
+          const outerZ = outerR * Math.cos(angle)   // Z从+r到-r
+
+          // 每个角度创建4个顶点
+          innerFrameVertices.push(innerX, elevationHeight, innerZ)  // 内侧下
+          innerFrameVertices.push(innerX, elevationHeight + frameHeight, innerZ)  // 内侧上
+          innerFrameVertices.push(outerX, elevationHeight, outerZ)  // 外侧下
+          innerFrameVertices.push(outerX, elevationHeight + frameHeight, outerZ)  // 外侧上
+        }
+
+        // 创建三角形面
+        for (let i = 0; i < segments; i++) {
+          const base = i * 4
+          const next = (i + 1) * 4
+
+          // 内侧面（面向圆心）
+          innerFrameIndices.push(base, next, base + 1)
+          innerFrameIndices.push(base + 1, next, next + 1)
+
+          // 外侧面（面向传送带）
+          innerFrameIndices.push(base + 2, base + 3, next + 2)
+          innerFrameIndices.push(base + 3, next + 3, next + 2)
+
+          // 顶面
+          innerFrameIndices.push(base + 1, next + 1, base + 3)
+          innerFrameIndices.push(base + 3, next + 1, next + 3)
+
+          // 底面
+          innerFrameIndices.push(base, base + 2, next)
+          innerFrameIndices.push(base + 2, next + 2, next)
+        }
+
+        const innerFrameGeo = new THREE.BufferGeometry()
+        innerFrameGeo.setAttribute('position', new THREE.Float32BufferAttribute(innerFrameVertices, 3))
+        innerFrameGeo.setIndex(innerFrameIndices)
+        innerFrameGeo.computeVertexNormals()
+
+        const innerFrame = new THREE.Mesh(innerFrameGeo, frameMaterial)
+        innerFrame.castShadow = true
+        curved.add(innerFrame)
+
+        // 沿圆弧创建黑色橡胶滚筒（只创建180度）
+        const rollerSpacing = 0.15
+        const rollerCount = Math.floor((arcAngle * radius) / rollerSpacing)
+
+        for (let i = 0; i <= rollerCount; i++) {
+          const angle = (i / rollerCount) * arcAngle  // 从0到PI
+          const x = -radius * Math.sin(angle)  // 向-X方向凸起
+          const z = radius * Math.cos(angle)   // Z从+r到-r
+
+          const rollerGeo = new THREE.CylinderGeometry(
+            rollerDiameter / 2,
+            rollerDiameter / 2,
+            width - frameWidth * 2,  // 与直线传送带一致，滚轮端部在框架内边缘
+            12
+          )
+          const roller = new THREE.Mesh(rollerGeo, rollerMaterial)
+          roller.rotation.z = Math.PI / 2
+          roller.rotation.y = -angle
+          roller.position.set(x, elevationHeight + frameHeight / 2, z)
+          curved.add(roller)
+        }
+
+        // 创建黑色橡胶皮带表面 - 扁平半圆环
+        // 履带宽度与直线传送带一致
+        const beltThickness = 0.012
+        const beltWidth = width - frameWidth * 4  // 与直线传送带一致
+        const beltInnerR = radius - beltWidth / 2  // 履带内半径
+        const beltOuterR = radius + beltWidth / 2  // 履带外半径
+        const beltSegments = 64
+
+        const beltVertices = []
+        const beltIndices = []
+
+        // 履带表面的Y坐标（在滚轮顶部上方一点）
+        const beltY = elevationHeight + frameHeight + rollerDiameter / 2 + 0.006
+
+        // 创建顶层顶点（从0到180度，向-X方向凸起）
+        for (let i = 0; i <= beltSegments; i++) {
+          const angle = (i / beltSegments) * Math.PI  // 从0到PI
+
+          // 每个角度创建内外两个顶点
+          const outerX = -beltOuterR * Math.sin(angle)  // 向-X方向凸起
+          const outerZ = beltOuterR * Math.cos(angle)   // Z从+r到-r
+          const innerX = -beltInnerR * Math.sin(angle)  // 向-X方向凸起
+          const innerZ = beltInnerR * Math.cos(angle)   // Z从+r到-r
+
+          beltVertices.push(innerX, beltY, innerZ)  // 内圈顶点
+          beltVertices.push(outerX, beltY, outerZ)  // 外圈顶点
+        }
+
+        // 创建三角形面片（连接相邻的顶点对）
+        for (let i = 0; i < beltSegments; i++) {
+          const curr = i * 2
+          const next = (i + 1) * 2
+
+          // 第一个三角形：当前内 -> 下一个内 -> 当前外
+          beltIndices.push(curr, next, curr + 1)
+          // 第二个三角形：当前外 -> 下一个内 -> 下一个外
+          beltIndices.push(curr + 1, next, next + 1)
+        }
+
+        const beltGeometry = new THREE.BufferGeometry()
+        beltGeometry.setAttribute('position', new THREE.Float32BufferAttribute(beltVertices, 3))
+        beltGeometry.setIndex(beltIndices)
+        beltGeometry.computeVertexNormals()  // 自动计算法线
+
+        const belt = new THREE.Mesh(beltGeometry, beltMaterial)
+        // 不需要再设置position.y，因为顶点已经在正确的高度了
+
+        curved.add(belt)
+
+        // 创建圆形支撑腿（沿180度圆弧分布）
+        const legCount = 8
+        const legHeight = elevationHeight
+        const legDiameter = 0.04
+
+        for (let i = 0; i <= legCount; i++) {
+          const angle = (i / legCount) * arcAngle  // 从0到PI
+
+          // 外侧支撑腿
+          const outerX = -(outerRadius - 0.08) * Math.sin(angle)  // 向-X方向凸起
+          const outerZ = (outerRadius - 0.08) * Math.cos(angle)   // Z从+r到-r
+          const outerLegGeo = new THREE.CylinderGeometry(legDiameter, legDiameter, legHeight, 8)
+          const outerLeg = new THREE.Mesh(outerLegGeo, legMaterial)
+          outerLeg.position.set(outerX, legHeight / 2, outerZ)
+          curved.add(outerLeg)
+
+          // 外侧底脚
+          const outerFootGeo = new THREE.CylinderGeometry(legDiameter * 1.3, legDiameter, 0.02, 8)
+          const outerFoot = new THREE.Mesh(outerFootGeo, legMaterial)
+          outerFoot.position.set(outerX, 0.01, outerZ)
+          curved.add(outerFoot)
+
+          // 内侧支撑腿
+          const innerX = -(innerRadius + 0.08) * Math.sin(angle)  // 向-X方向凸起
+          const innerZ = (innerRadius + 0.08) * Math.cos(angle)   // Z从+r到-r
+          const innerLegGeo = new THREE.CylinderGeometry(legDiameter, legDiameter, legHeight, 8)
+          const innerLeg = new THREE.Mesh(innerLegGeo, legMaterial)
+          innerLeg.position.set(innerX, legHeight / 2, innerZ)
+          curved.add(innerLeg)
+
+          // 内侧底脚
+          const innerFootGeo = new THREE.CylinderGeometry(legDiameter * 1.3, legDiameter, 0.02, 8)
+          const innerFoot = new THREE.Mesh(innerFootGeo, legMaterial)
+          innerFoot.position.set(innerX, 0.01, innerZ)
+          curved.add(innerFoot)
+        }
+
+        return curved
+      }
+
+      // 6. 主输送带网络系统 - 右下方10个短传送带
+      const createMainConveyorNetwork = () => {
+        const area = new THREE.Group()
+
+        // 在右下方创建10个短传送带
+        // 单行并排摆放在右下方（正X，负Z）
+        for (let i = 0; i < 10; i++) {
+          const conveyor = createRealisticRollerConveyor(3, 0.6)  // 3米长，0.6米宽
+          conveyor.position.set(
+            15 + i * 3.4,    // X: 从15开始（更靠右侧），每个间隔3.4米
+            0,
+            -25              // Z: -25（更靠下方）
+          )
+          conveyor.rotation.y = 0  // 横向摆放
+          area.add(conveyor)
+
+          // 在每个传送带下方添加送料设备
+          const feeder = createFeederDevice()
+          feeder.position.set(
+            15 + i * 3.4,    // X: 与传送带对齐
+            0,
+            -27.5            // Z: 在传送带下方2.5米处
+          )
+          area.add(feeder)
+
+          // 在送料机左侧添加原料堆放区
+          const materialStack = createMaterialStack()
+          materialStack.position.set(
+            15 + i * 3.4 - 1.5,  // X: 在送料机左侧1.5米处
+            0,
+            -27.5                // Z: 与送料机对齐
+          )
+          materialStack.rotation.y = Math.PI / 2  // 旋转90度，使纸箱面向送料机
+          area.add(materialStack)
+        }
+
+        // 在所有纵向传送带的上方（前端）添加横向主传送带
+        // 横向传送带连接所有10条纵向传送带
+        const horizontalConveyorLength = 10 * 3.4 + 0.6  // 覆盖所有10条传送带的宽度
+        const horizontalConveyor = createRealisticRollerConveyor(horizontalConveyorLength, 0.8)
+        horizontalConveyor.position.set(
+          15 + (10 * 3.4) / 2 - 1.7,  // X: 居中对齐所有传送带
+          0,
+          -25 + 1.5                   // Z: 在纵向传送带前端上方
+        )
+        horizontalConveyor.rotation.y = Math.PI / 2  // 旋转90度，变成横向
+        area.add(horizontalConveyor)
+
+        // 在横向传送带左端添加180度圆弧形转弯传送带
+        // 横向传送带的中心位置
+        const horizontalCenterX = 15 + (10 * 3.4) / 2 - 1.7
+        const horizontalZ = -25 + 1.5
+        const horizontalLength = horizontalConveyorLength
+
+        // 横向传送带旋转90度后，长度沿X方向延伸
+        // 左端X坐标 = 中心X - 长度/2
+        const horizontalLeftEndX = horizontalCenterX - horizontalLength / 2
+
+        // 创建180度圆弧传送带（半径基于横向传送带中心线，宽度0.8米与横向传送带一致）
+        // 横向传送带旋转90度后，宽度0.8米沿Z方向
+        // 圆弧的中心半径应该是横向传送带的中心线位置
+        const horizontalConveyorWidth = 0.8
+        const curvedRadius = 3.0  // 圆弧中心半径
+        const curvedConveyor = createCurvedConveyor(curvedRadius, horizontalConveyorWidth)
+
+        // 圆弧从角度0（+Z方向）向-X方向凸起，到角度PI（-Z方向）
+        // 终点在 (0, 0, -radius)，应该对齐到横向传送带的中心线
+        curvedConveyor.position.set(
+          horizontalLeftEndX,           // X: 与横向传送带左端对齐
+          0,
+          horizontalZ + curvedRadius    // Z: 圆心在横向传送带后方radius米
+        )
+        area.add(curvedConveyor)
+
+        // 在圆弧另一端（起点）连接一个短传送带（横向，向右延伸）
+        // 起点位置：圆心 + (0, 0, +radius)
+        const curvedStartZ = horizontalZ + curvedRadius + curvedRadius  // 圆弧起点的Z坐标
+        const shortConveyorLength = 10.0  // 短传送带长度10米
+        const shortConveyor = createRealisticRollerConveyor(shortConveyorLength, horizontalConveyorWidth)
+        shortConveyor.position.set(
+          horizontalLeftEndX + shortConveyorLength / 2,  // X: 从圆弧起点向右延伸
+          0,
+          curvedStartZ                                    // Z: 与圆弧起点对齐
+        )
+        shortConveyor.rotation.y = Math.PI / 2  // 旋转90度，变成横向
+        area.add(shortConveyor)
+
+        // 在短传送带中心位置创建向右上方延伸的传送带
+        const shortConveyorCenterX = horizontalLeftEndX + shortConveyorLength / 2  // 短传送带中心X坐标
+        const diagonalConveyorLength = 5.0  // 斜向传送带长度5米
+        const diagonalConveyor = createRealisticRollerConveyor(diagonalConveyorLength, horizontalConveyorWidth)
+
+        // 向右上方：正X方向（向右），负Z方向（向上）
+        const diagonalAngle = Math.PI / 6  // 30度倾斜角
+        diagonalConveyor.position.set(
+          shortConveyorCenterX + (diagonalConveyorLength / 2) * Math.cos(diagonalAngle),  // X: 向右延伸
+          0,
+          curvedStartZ - (diagonalConveyorLength / 2) * Math.sin(diagonalAngle)  // Z: 向上延伸（负方向）
+        )
+        diagonalConveyor.rotation.y = Math.PI / 2 + diagonalAngle  // 旋转，使其向右上方
+        area.add(diagonalConveyor)
+
+        // 创建连接框架材质和几何体
+        const connectionFrameGeo = new THREE.BoxGeometry(0.03, 0.18, 0.8)
+        const connectionFrameMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc9b583,
+          metalness: 0.7,
+          roughness: 0.3
+        })
+
+        // 在半圆和横向传送带的连接处添加连接框架
+        // 创建左端连接框架（垂直的矩形框架）
+        const leftConnectionFrame = new THREE.Mesh(connectionFrameGeo, connectionFrameMaterial)
+        leftConnectionFrame.position.set(horizontalLeftEndX, 0.35 + 0.09, horizontalZ)
+        leftConnectionFrame.castShadow = true
+        area.add(leftConnectionFrame)
+
+        // 在圆弧起点和短传送带的连接处添加连接框架
+        const startConnectionFrame = new THREE.Mesh(connectionFrameGeo, connectionFrameMaterial)
+        startConnectionFrame.position.set(horizontalLeftEndX, 0.35 + 0.09, curvedStartZ)
+        startConnectionFrame.castShadow = true
+        area.add(startConnectionFrame)
+
+        return area
+      }
+
+      // 7. 右侧办公与控制区域 - 简化版本
+      const createOfficeArea = () => {
+        const area = new THREE.Group()
+
+        // 合并办公建筑（减少几何体数量）
+        const officeBuilding = new THREE.Mesh(
+          new THREE.BoxGeometry(10, 3.5, 10),
+          new THREE.MeshStandardMaterial({
+            color: 0x2c3e50,
+            metalness: 0.2,
+            roughness: 0.8
+          })
+        )
+        officeBuilding.position.set(38, 1.75, 3)
+        officeBuilding.castShadow = true
+        area.add(officeBuilding)
+
+        return area
+      }
+
+      // 8. 顶部存储区域 - 简化版本
+      const createStorageArea = () => {
+        const area = new THREE.Group()
+
+        // 合并存储区为一个大建筑
+        const storage = new THREE.Mesh(
+          new THREE.BoxGeometry(20, 4, 8),
+          new THREE.MeshStandardMaterial({
+            color: 0x95a5a6,
+            metalness: 0.3,
+            roughness: 0.7
+          })
+        )
+        storage.position.set(18, 2, 22)
+        storage.castShadow = true
+        area.add(storage)
+
+        return area
+      }
+
+      // 9. 底部冷藏区域 - 简化版本
+      const createFreezingArea = () => {
+        const area = new THREE.Group()
+
+        // 合并冷藏区
+        const freezer = new THREE.Mesh(
+          new THREE.BoxGeometry(8, 4, 12),
+          new THREE.MeshStandardMaterial({
+            color: 0x3498db,
+            metalness: 0.5,
+            roughness: 0.3
+          })
+        )
+        freezer.position.set(-38, 2, -14)
+        freezer.castShadow = true
+        area.add(freezer)
+
+        return area
+      }
+
+      // 10. 工厂墙体和区域划分
+      const createFactoryWalls = () => {
+        const area = new THREE.Group()
+
+        // 外墙材质
+        const wallMaterial = new THREE.MeshStandardMaterial({
+          color: 0x2c3e50,
+          metalness: 0.1,
+          roughness: 0.9
+        })
+
+        // 左侧外墙
+        const leftWall = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 5, 60),
+          wallMaterial
+        )
+        leftWall.position.set(-48, 2.5, 0)
+        leftWall.castShadow = true
+        area.add(leftWall)
+
+        // 右侧外墙
+        const rightWall = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 5, 60),
+          wallMaterial
+        )
+        rightWall.position.set(48, 2.5, 0)
+        rightWall.castShadow = true
+        area.add(rightWall)
+
+        // 顶部外墙
+        const topWall = new THREE.Mesh(
+          new THREE.BoxGeometry(96, 5, 0.3),
+          wallMaterial
+        )
+        topWall.position.set(0, 2.5, 30)
+        topWall.castShadow = true
+        area.add(topWall)
+
+        // 底部外墙
+        const bottomWall = new THREE.Mesh(
+          new THREE.BoxGeometry(96, 5, 0.3),
+          wallMaterial
+        )
+        bottomWall.position.set(0, 2.5, -30)
+        bottomWall.castShadow = true
+        area.add(bottomWall)
+
+        // Zone 9 标识牌
+        const zone9Label = new THREE.Mesh(
+          new THREE.BoxGeometry(3, 1, 0.1),
+          new THREE.MeshStandardMaterial({
+            color: 0xf39c12,
+            emissive: 0xe67e22,
+            emissiveIntensity: 0.5
+          })
+        )
+        zone9Label.position.set(-40, 4, 10)
+        area.add(zone9Label)
+
+        return area
+      }
+
+      // 11. 环境装饰元素
+      const createEnvironmentDetails = () => {
+        const area = new THREE.Group()
+
+        // 安全标识线（黄黑条纹）
+        const safetyLineMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffd700
+        })
+
+        // 主通道安全线
+        for (let i = 0; i < 20; i++) {
+          const line = new THREE.Mesh(
+            new THREE.BoxGeometry(2, 0.02, 0.2),
+            safetyLineMaterial
+          )
+          line.position.set(-30 + i * 3, 0.01, 0)
+          area.add(line)
+        }
+
+        return area
+      }
+
+      // 只保留传送带网络
+      group.add(createMainConveyorNetwork())         // 主输送网络
+
+      // 工厂地面 - 根据布局扩大尺寸
+      const floorGeometry = new THREE.PlaneGeometry(120, 80)
+      const floorMaterial = new THREE.MeshPhongMaterial({
+        color: 0x2c3e50,
+        side: THREE.DoubleSide
+      })
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial)
+      floor.rotation.x = -Math.PI / 2
+      floor.position.y = 0
+      floor.receiveShadow = true
+      group.add(floor)
+
+      return group
+    }
+
+    const factory = createFactory()
+    scene.add(factory)
+
+    // Grid - 更大的网格以覆盖整个工厂区域
+    const gridHelper = new THREE.GridHelper(120, 30, 0x3498db, 0x34495e)
+    gridHelper.material.opacity = 0.25
+    gridHelper.material.transparent = true
+    scene.add(gridHelper)
+
+    // Animation loop
+    let animationId: number
+    const animate = () => {
+      animationId = requestAnimationFrame(animate)
+      controls.update()
+      renderer.render(scene, camera)
+    }
+    animate()
+
+    // Handle resize
+    const handleResize = () => {
+      if (!mountRef.current) return
+      const width = mountRef.current.clientWidth
+      const height = mountRef.current.clientHeight
+      camera.aspect = width / height
+      camera.updateProjectionMatrix()
+      renderer.setSize(width, height)
+    }
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      cancelAnimationFrame(animationId)
+      window.removeEventListener('resize', handleResize)
+      if (mountRef.current && renderer.domElement.parentNode) {
+        mountRef.current.removeChild(renderer.domElement)
+      }
+      renderer.dispose()
+    }
+  }, [])
+
+  // 设备运行数据
+  const deviceStats = {
+    total: 99,
+    running: 95,
+    maintenance: 3,
+    fault: 1,
+    utilization: 96.2,
+  }
+
+  // 工艺图谱数据
+  const processData = {
+    name: '主流程',
+    type: 'MA3002',
+    count: 34000,
+    efficiency: '92.3%',
+    duration: '2023.3.1',
+    status: '1232单',
+  }
+
+  // 人员管理数据
+  const personnelData = {
+    attendance: '100%',
+    onDuty: 123,
+    workers: 98,
+    engineers: 25,
+    management: 8,
+  }
+
+  // 能耗产品品质趋势数据
+  const energyTrendData = [
+    { date: '08/01', 生产能耗: 35, 计划能耗: 45, 社会能耗: 25 },
+    { date: '08/02', 生产能耗: 42, 计划能耗: 48, 社会能耗: 28 },
+    { date: '08/03', 生产能耗: 38, 计划能耗: 46, 社会能耗: 26 },
+    { date: '08/04', 生产能耗: 45, 计划能耗: 50, 社会能耗: 30 },
+    { date: '08/05', 生产能耗: 40, 计划能耗: 47, 社会能耗: 27 },
+    { date: '08/06', 生产能耗: 48, 计划能耗: 52, 社会能耗: 32 },
+    { date: '08/07', 生产能耗: 43, 计划能耗: 49, 社会能耗: 29 },
+    { date: '08/08', 生产能耗: 46, 计划能耗: 51, 社会能耗: 31 },
+  ]
+
+  // 7天能耗趋势数据
+  const weeklyEnergyData = [
+    { date: '03/10', value: 45 },
+    { date: '03/11', value: 52 },
+    { date: '03/12', value: 48 },
+    { date: '03/13', value: 55 },
+    { date: '03/14', value: 50 },
+    { date: '03/15', value: 58 },
+    { date: '03/16', value: 53 },
+  ]
+
+  // 招聘看板数据
+  const recruitmentData = [
+    { year: '2023年', 分值: 30, 产量: 3600, 人均产值: 10, 质量: 10 },
+    { year: '2022年', 分值: 30, 产量: 600, 人均产值: 10, 质量: 4 },
+    { year: '2021年', 分值: 30, 产量: 4000, 人均产值: 50, 质量: 4 },
+    { year: '2020年', 分值: 60, 产量: 500, 人均产值: 40, 质量: 6 },
+  ]
+
+  // 区域传感器概览
+  const sensorStatus = [
+    { name: '测油温度', status: 'normal', value: 0.3 },
+    { name: '温度', status: 'warning', value: 0.2 },
+    { name: '电流', status: 'normal', value: 0.1 },
+    { name: '电压', status: 'normal', value: 0.15 },
+    { name: '功率消耗', status: 'normal', value: 0.25 },
+  ]
+
+  // 实时监测趋势
+  const realtimeData = Array.from({ length: 20 }, (_, i) => ({
+    time: `0:00:${i.toString().padStart(2, '0')}`,
+    测油温度: Math.sin(i * 0.5) * 0.1 + 0.15,
+    温度: Math.cos(i * 0.5) * 0.1 + 0.1,
+    电流: Math.sin(i * 0.3 + 1) * 0.08 + 0.12,
+    电压: Math.cos(i * 0.4 + 2) * 0.09 + 0.11,
+  }))
+
+  // 7天能耗趋势（右侧）
+  const weeklyPowerData = Array.from({ length: 7 }, (_, i) => {
+    const baseValues = [120, 150, 180, 160, 190, 170, 200]
+    return {
+      date: `04-${(11 + i).toString().padStart(2, '0')}`,
+      value: baseValues[i % baseValues.length] + Math.random() * 50,
+    }
+  })
+
+  const energyLineConfig = {
+    data: energyTrendData.flatMap(item => [
+      { date: item.date, type: '生产能耗', value: item.生产能耗 },
+      { date: item.date, type: '计划能耗', value: item.计划能耗 },
+      { date: item.date, type: '社会能耗', value: item.社会能耗 },
+    ]),
+    xField: 'date',
+    yField: 'value',
+    seriesField: 'type',
+    smooth: true,
+    animation: {
+      appear: {
+        animation: 'path-in',
+        duration: 1000,
+      },
+    },
+    color: ['#1890ff', '#52c41a', '#faad14'],
+  }
+
+  const weeklyEnergyConfig = {
+    data: weeklyEnergyData,
+    xField: 'date',
+    yField: 'value',
+    smooth: true,
+    areaStyle: {
+      fill: 'l(270) 0:#1890ff 1:#141414',
+    },
+    line: {
+      color: '#1890ff',
+    },
+  }
+
+  const realtimeConfig = {
+    data: realtimeData.flatMap(item => [
+      { time: item.time, type: '测油温度', value: item.测油温度 },
+      { time: item.time, type: '温度', value: item.温度 },
+      { time: item.time, type: '电流', value: item.电流 },
+      { time: item.time, type: '电压', value: item.电压 },
+    ]),
+    xField: 'time',
+    yField: 'value',
+    seriesField: 'type',
+    smooth: true,
+    animation: {
+      appear: {
+        animation: 'wave-in',
+        duration: 1000,
+      },
+    },
+    color: ['#52c41a', '#faad14', '#1890ff', '#722ed1'],
+  }
+
+  const weeklyPowerConfig = {
+    data: weeklyPowerData,
+    xField: 'date',
+    yField: 'value',
+    columnStyle: {
+      fill: 'l(270) 0:#1890ff 0.5:#36cfc9 1:#52c41a',
+    },
+  }
+
+  return (
+    <div className={styles.digitalFactory}>
+      {/* 顶部标题栏 */}
+      <div className={styles.header}>
+        <div className={styles.headerContent}>
+          <div className={styles.logo}>
+            <ApiOutlined className={styles.logoIcon} />
+            <span className={styles.title}>TFF数字工厂</span>
+          </div>
+          <div className={styles.datetime}>
+            {currentTime.toLocaleString('zh-CN', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false,
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 主要内容区 */}
+      <div className={styles.mainContent}>
+        {/* 左侧面板 */}
+        <div className={styles.leftPanel}>
+          {/* 设备运行信息 */}
+          <Card title="设备运行信息" className={styles.card} bordered={false}>
+            <Row gutter={[16, 16]}>
+              <Col span={12}>
+                <Statistic
+                  title="总数"
+                  value={deviceStats.total}
+                  prefix="总数:"
+                  suffix="台"
+                />
+              </Col>
+              <Col span={12}>
+                <Statistic
+                  title="运行"
+                  value={deviceStats.running}
+                  valueStyle={{ color: '#52c41a' }}
+                  prefix="运行:"
+                />
+              </Col>
+              <Col span={12}>
+                <Statistic
+                  title="维护"
+                  value={deviceStats.maintenance}
+                  valueStyle={{ color: '#faad14' }}
+                  prefix="维护:"
+                />
+              </Col>
+              <Col span={12}>
+                <Statistic
+                  title="故障"
+                  value={deviceStats.fault}
+                  valueStyle={{ color: '#ff4d4f' }}
+                  prefix="故障:"
+                />
+              </Col>
+            </Row>
+            <div style={{ marginTop: 16 }}>
+              <div>利用率: {deviceStats.utilization}%</div>
+              <Progress
+                percent={deviceStats.utilization}
+                strokeColor="#52c41a"
+                showInfo={false}
+              />
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div>人数: 2023/123</div>
+            </div>
+          </Card>
+
+          {/* 工艺图谱 */}
+          <Card title="工艺图谱" className={styles.card} bordered={false}>
+            <div className={styles.processInfo}>
+              <div>产品名称: {processData.name}</div>
+              <div>工序号: {processData.type}</div>
+              <div>产品代号: {processData.count}</div>
+              <div>工序名称: {processData.efficiency}</div>
+              <div>用地: {processData.duration}</div>
+              <div>单位品类数量: {processData.status}</div>
+            </div>
+          </Card>
+
+          {/* 人员管理 */}
+          <Card title="人员管理" className={styles.card} bordered={false}>
+            <div className={styles.personnelInfo}>
+              <div className={styles.attendanceRate}>
+                出勤人员占比 {personnelData.attendance}
+              </div>
+              <Row gutter={16}>
+                <Col span={8}>
+                  <div>在岗: {personnelData.onDuty}人</div>
+                </Col>
+                <Col span={8}>
+                  <div>工人: {personnelData.workers}</div>
+                </Col>
+                <Col span={8}>
+                  <div>管理: {personnelData.management}</div>
+                </Col>
+              </Row>
+              <div style={{ marginTop: 8 }}>
+                <div>职员: {personnelData.engineers}</div>
+                <div>工程师: 良好</div>
+              </div>
+            </div>
+          </Card>
+
+          {/* 能耗产品品质趋势 */}
+          <Card title="能耗产品品质趋势" className={styles.card} bordered={false}>
+            <Line {...energyLineConfig} height={180} />
+          </Card>
+
+          {/* 7天能耗趋势 */}
+          <Card title="7天能耗趋势" className={styles.card} bordered={false}>
+            <Line {...weeklyEnergyConfig} height={150} />
+          </Card>
+        </div>
+
+        {/* 中间3D场景 */}
+        <div className={styles.centerPanel}>
+          <div className={styles.scene3d} ref={mountRef} />
+        </div>
+
+        {/* 右侧面板 */}
+        <div className={styles.rightPanel}>
+          {/* 招聘看板 */}
+          <Card title="招聘看板" className={styles.card} bordered={false}>
+            <div className={styles.recruitmentTable}>
+              <div className={styles.tableHeader}>
+                <span>年份</span>
+                <span>分值</span>
+                <span>产量</span>
+                <span>人均产值</span>
+                <span>质量</span>
+              </div>
+              {recruitmentData.map((item, index) => (
+                <div key={index} className={styles.tableRow}>
+                  <span>{item.year}</span>
+                  <span>{item.分值}亿</span>
+                  <span>{item.产量}个</span>
+                  <span>{item.人均产值}万</span>
+                  <span>{item.质量}亿</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* 区域传感器概览 */}
+          <Card title="区域传感器概览" className={styles.card} bordered={false}>
+            <div className={styles.sensorStatus}>
+              <div className={styles.statusLegend}>
+                <span className={styles.normal}>正常</span>
+                <span className={styles.warning}>普通</span>
+                <span className={styles.alarm}>超限</span>
+                <span className={styles.fault}>故障</span>
+              </div>
+              <div className={styles.heatmapPlaceholder}>
+                {/* 这里可以放置热力图或状态网格 */}
+                <div className={styles.timeScale}>
+                  11:20 11:25 11:30 11:35 11:40 11:45 11:50 11:55
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* 实时监测趋势 */}
+          <Card title="实时监测趋势" className={styles.card} bordered={false}>
+            <div className={styles.sensorButtons}>
+              <button className={styles.active}>测油温度</button>
+              <button>温度</button>
+              <button>电流</button>
+              <button>电压</button>
+              <button>功率消耗</button>
+            </div>
+            <Line {...realtimeConfig} height={150} />
+          </Card>
+
+          {/* 7天能耗趋势 */}
+          <Card title="7天能耗趋势" className={styles.card} bordered={false}>
+            <Column {...weeklyPowerConfig} height={150} />
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default DigitalFactory

@@ -17,6 +17,7 @@ import {
   CameraOutlined,
   CarOutlined,
   BlockOutlined,
+  BuildOutlined,
 } from '@ant-design/icons'
 import { useAuthStore } from '@/store/auth'
 import styles from './index.module.scss'
@@ -63,6 +64,11 @@ const menuItems = [
     key: 'vehicle-monitor',
     icon: <CarOutlined />,
     label: '车辆监控',
+  },
+  {
+    key: 'digital-factory',
+    icon: <BuildOutlined />,
+    label: '数字工厂',
   },
   {
     key: 'users',
