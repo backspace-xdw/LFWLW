@@ -26,18 +26,11 @@ const ElementItem: React.FC<ElementItemProps> = ({ template, onDragEnd }) => {
     setTimeout(() => document.body.removeChild(dragImage), 0);
   };
 
-  const handleDragEnd = (e: React.DragEvent) => {
-    if (dragRef.current) {
-      const deltaX = e.clientX - dragRef.current.startX;
-      const deltaY = e.clientY - dragRef.current.startY;
-      
-      // 只有拖拽距离足够远才触发
-      if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
-        onDragEnd(template, { x: e.clientX, y: e.clientY });
-      }
-      
-      dragRef.current = null;
-    }
+  const handleDragEnd = (_e: React.DragEvent) => {
+    // 清理拖拽状态
+    // 注意：元素创建由画布的 onDrop 事件处理，这里不再调用 onDragEnd
+    // 避免重复创建元素
+    dragRef.current = null;
   };
 
   return (
