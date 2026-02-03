@@ -1,9 +1,17 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Group, Rect, Text, Path, Circle, Line, Shape } from 'react-konva';
 import Konva from 'konva';
-import { GraphicElement as GraphicElementType, ElementType } from '../../types';
+import { GraphicElement as GraphicElementType } from '../../types';
 import { getTemplate } from '../../templates';
 import { useEditorStore } from '../../store/editorStore';
+
+// 导入优化后的符号组件
+import Motor from '../../../../components/GraphicsEditor/symbols/Motor';
+import Pump from '../../../../components/GraphicsEditor/symbols/Pump';
+import Valve from '../../../../components/GraphicsEditor/symbols/Valve';
+import Tank from '../../../../components/GraphicsEditor/symbols/Tank';
+import Sensor from '../../../../components/GraphicsEditor/symbols/Sensor';
+import Pipe from '../../../../components/GraphicsEditor/symbols/Pipe';
 
 interface GraphicElementProps {
   element: GraphicElementType;
@@ -165,20 +173,60 @@ const GraphicElement: React.FC<GraphicElementProps> = ({
   
   // 渲染元素内容
   const renderContent = () => {
-    if (template && template.graphics.type === 'svg') {
-      return renderSVGContent(template.graphics.data);
-    }
+    // 使用优化后的符号组件
+    // 注意：符号组件使用中心定位，需要将 x/y 设置为元素尺寸的一半
+    const symbolProps = {
+      id: element.id,
+      x: element.size.width / 2,  // 中心点 X
+      y: element.size.height / 2, // 中心点 Y
+      width: element.size.width,
+      height: element.size.height,
+      rotation: 0,
+      deviceId: element.properties?.tag,
+      deviceData: element.properties?.deviceData,
+      showLabel: false, // 在编辑模式下不显示标签，由 GraphicElement 统一处理
+      hasAlarm: element.properties?.hasAlarm || false,
+      isMonitorMode: false,
+      isSelected: false,
+      onSelect: undefined,
+      onChange: undefined,
+    };
 
-    // 默认渲染一个矩形
-    return (
-      <Rect
-        width={element.size.width}
-        height={element.size.height}
-        fill={element.style?.fill || '#ddd'}
-        stroke={element.style?.stroke || '#666'}
-        strokeWidth={element.style?.strokeWidth || 1}
-      />
-    );
+    // 根据元素类型选择符号组件
+    switch (element.type) {
+      case 'motor':
+        return <Motor {...symbolProps} />;
+      case 'pump':
+        return <Pump {...symbolProps} />;
+      case 'valve':
+        return <Valve {...symbolProps} />;
+      case 'tank':
+        return <Tank {...symbolProps} />;
+      case 'instrument':
+        return <Sensor {...symbolProps} sensorType="generic" />;
+      case 'pipe':
+        return <Pipe
+          {...symbolProps}
+          points={element.properties?.points || [0, 0, element.size.width, 0]}
+          strokeWidth={element.properties?.strokeWidth || 8}
+          hasFlow={element.properties?.hasFlow || false}
+          flowDirection={element.properties?.flowDirection || 'forward'}
+        />;
+      default:
+        // 使用SVG模板或默认矩形
+        if (template && template.graphics.type === 'svg') {
+          return renderSVGContent(template.graphics.data);
+        }
+        return (
+          <Rect
+            width={element.size.width}
+            height={element.size.height}
+            fill={element.style?.fill || '#ddd'}
+            stroke={element.style?.stroke || '#666'}
+            strokeWidth={element.style?.strokeWidth || 1}
+          />
+        );
+    }
   };
 
   // 处理拖拽结束，实现网格对齐
