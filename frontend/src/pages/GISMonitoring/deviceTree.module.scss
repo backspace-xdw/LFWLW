@@ -1,0 +1,132 @@
+.treeWrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d2129;
+  border-bottom: 1px solid #e8e8e8;
+  background: linear-gradient(180deg, #fafbfc 0%, #ffffff 100%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  :global(.anticon) {
+    color: #1890ff;
+  }
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 8px 4px;
+}
+
+.footer {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #86909c;
+  border-top: 1px solid #f0f0f0;
+  background: #fafbfc;
+}
+
+.highlight {
+  color: #1890ff;
+  font-weight: 700;
+}
+
+.tree {
+  font-size: 13px;
+
+  :global(.ant-tree-node-content-wrapper) {
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #f0f7ff;
+    }
+  }
+
+  :global(.ant-tree-treenode-selected) {
+    :global(.ant-tree-node-content-wrapper) {
+      background: #e6f4ff !important;
+    }
+  }
+}
+
+// ===== 根节点 (全部设备) =====
+.rootTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.rootIcon {
+  color: #1890ff;
+  font-size: 14px;
+}
+
+// ===== 分组节点 =====
+.groupTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #4e5969;
+}
+
+.groupIcon {
+  color: #722ed1;
+  font-size: 13px;
+}
+
+.groupName {
+  margin-right: 2px;
+}
+
+.countTag {
+  margin: 0 0 0 2px !important;
+  font-size: 11px;
+  line-height: 16px;
+  height: 17px;
+  padding: 0 5px;
+}
+
+// ===== 叶子节点 (单设备) =====
+.leafTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.leafIcon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.leafId {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1d2129;
+  flex-shrink: 0;
+}
+
+.leafLoc {
+  flex: 1;
+  font-size: 12px;
+  color: #86909c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

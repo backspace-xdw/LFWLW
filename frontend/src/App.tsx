@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import DeviceList from './pages/DeviceList'
 import DeviceDetail from './pages/DeviceDetail'
 import RealtimeMonitor from './pages/RealtimeMonitor'
+import GISMonitoring from './pages/GISMonitoring'
 import AlarmManagement from './pages/AlarmManagement'
 import DataAnalysis from './pages/DataAnalysis'
 import SystemSettings from './pages/SystemSettings'
@@ -45,6 +46,7 @@ function App() {
             <Route path="devices" element={<DeviceList />} />
             <Route path="devices/:id" element={<DeviceDetail />} />
             <Route path="monitor" element={<RealtimeMonitor />} />
+            <Route path="gis" element={<GISMonitoring />} />
             <Route path="alarms" element={<AlarmManagement />} />
             <Route path="analysis" element={<DataAnalysis />} />
             <Route path="models" element={<Model3D />} />

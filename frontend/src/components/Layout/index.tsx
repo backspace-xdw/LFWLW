@@ -18,6 +18,7 @@ import {
   CarOutlined,
   BlockOutlined,
   BuildOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons'
 import { useAuthStore } from '@/store/auth'
 import styles from './index.module.scss'
@@ -39,6 +40,11 @@ const menuItems = [
     key: 'monitor',
     icon: <MonitorOutlined />,
     label: '实时监控',
+  },
+  {
+    key: 'gis',
+    icon: <EnvironmentOutlined />,
+    label: 'GIS监控',
   },
   {
     key: 'alarms',
