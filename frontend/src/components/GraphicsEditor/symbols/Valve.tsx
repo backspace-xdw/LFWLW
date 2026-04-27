@@ -9,6 +9,7 @@ interface ValveProps {
   width: number
   height: number
   rotation?: number
+  variant?: 'ball' | 'gate' | 'check'
   deviceId?: string
   deviceData?: any
   showLabel?: boolean
@@ -26,6 +27,7 @@ const Valve: React.FC<ValveProps> = ({
   width,
   height,
   rotation = 0,
+  variant = 'ball',
   deviceId,
   deviceData,
   showLabel = true,
@@ -109,14 +111,21 @@ const Valve: React.FC<ValveProps> = ({
     }
   }, [isMonitorMode, deviceData?.status])
 
-  // 获取状态颜色
+  // 获取状态颜色 - 根据阀门类型区分
   const getStatusColor = () => {
-    if (!deviceData) return { main: '#8c8c8c', light: '#bfbfbf', dark: '#595959' }
+    if (!deviceData) {
+      // 默认颜色根据variant区分
+      if (variant === 'gate') return { main: '#faad14', light: '#ffc53d', dark: '#d48806' }
+      if (variant === 'check') return { main: '#13c2c2', light: '#36cfc9', dark: '#08979c' }
+      return { main: '#52c41a', light: '#95de64', dark: '#389e0d' } // ball valve green
+    }
     if (deviceData.status === 'offline') return { main: '#8c8c8c', light: '#bfbfbf', dark: '#595959' }
     if (hasAlarm) return { main: '#ff4d4f', light: '#ff7875', dark: '#cf1322' }
     const opening = getOpening()
     if (opening === 0) return { main: '#ff4d4f', light: '#ff7875', dark: '#cf1322' }
     if (opening === 100) return { main: '#52c41a', light: '#95de64', dark: '#389e0d' }
+    if (variant === 'gate') return { main: '#faad14', light: '#ffc53d', dark: '#d48806' }
+    if (variant === 'check') return { main: '#13c2c2', light: '#36cfc9', dark: '#08979c' }
     return { main: '#1890ff', light: '#69c0ff', dark: '#096dd9' }
   }
 
@@ -145,10 +154,9 @@ const Valve: React.FC<ValveProps> = ({
       x={x}
       y={y}
       rotation={rotation}
-      draggable={!isMonitorMode}
+      draggable={false}
       onClick={handleClick}
       onTap={handleClick}
-      onDragEnd={handleDragEnd}
     >
       {/* 选中边框 */}
       {isSelected && (
@@ -333,15 +341,36 @@ const Valve: React.FC<ValveProps> = ({
         strokeWidth={1}
       />
 
-      {/* V标记 */}
+      {/* 止回阀箭头标记 */}
+      {variant === 'check' && (
+        <Line
+          points={[-w * 0.12, -h * 0.15, w * 0.08, 0, -w * 0.12, h * 0.15]}
+          closed
+          fill="#08979c"
+          stroke="#08979c"
+          strokeWidth={1}
+        />
+      )}
+
+      {/* 闸阀手轮 */}
+      {variant === 'gate' && (
+        <Group x={0} y={-h * 0.5 - 5}>
+          <Circle x={0} y={0} radius={h * 0.15}
+            fill="none" stroke="#d48806" strokeWidth={3} />
+          <Line points={[-h * 0.12, 0, h * 0.12, 0]} stroke="#d48806" strokeWidth={2} />
+          <Line points={[0, -h * 0.12, 0, h * 0.12]} stroke="#d48806" strokeWidth={2} />
+        </Group>
+      )}
+
+      {/* 阀门类型标记 */}
       <Text
         x={w * 0.2}
         y={h * 0.25}
-        text="V"
-        fontSize={Math.min(w, h) * 0.25}
+        text={variant === 'gate' ? 'GV' : variant === 'check' ? 'CV' : 'BV'}
+        fontSize={Math.min(w, h) * 0.2}
         fontStyle="bold"
         fontFamily="Arial"
-        fill="#333"
+        fill={variant === 'gate' ? '#d48806' : variant === 'check' ? '#08979c' : '#389e0d'}
       />
 
       {/* 标签 */}

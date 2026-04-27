@@ -81,7 +81,7 @@ const DataPanel: React.FC<DataPanelProps> = ({ onDataUpdate }) => {
   }, []);
 
   // 格式化数据显示
-  const formatValue = (key: string, value: any): string => {
+  const formatValue = (_key: string, value: any): string => {
     if (typeof value === 'number') {
       return value.toFixed(1);
     }

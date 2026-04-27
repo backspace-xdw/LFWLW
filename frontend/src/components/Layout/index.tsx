@@ -15,10 +15,12 @@ import {
   MenuUnfoldOutlined,
   TeamOutlined,
   CameraOutlined,
-  CarOutlined,
   BlockOutlined,
   BuildOutlined,
   EnvironmentOutlined,
+  ToolOutlined,
+  SolutionOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons'
 import { useAuthStore } from '@/store/auth'
 import styles from './index.module.scss'
@@ -47,9 +49,24 @@ const menuItems = [
     label: 'GIS监控',
   },
   {
+    key: 'instrument-config',
+    icon: <ToolOutlined />,
+    label: '配置管理',
+  },
+  {
     key: 'alarms',
     icon: <AlertOutlined />,
     label: '告警管理',
+  },
+  {
+    key: 'alarm-handling',
+    icon: <SolutionOutlined />,
+    label: '告警处置',
+  },
+  {
+    key: 'risk-warning',
+    icon: <ThunderboltOutlined />,
+    label: '风险预警',
   },
   {
     key: 'analysis',
@@ -65,11 +82,6 @@ const menuItems = [
     key: 'graphics-editor',
     icon: <BlockOutlined />,
     label: '2D图形编辑',
-  },
-  {
-    key: 'vehicle-monitor',
-    icon: <CarOutlined />,
-    label: '车辆监控',
   },
   {
     key: 'digital-factory',

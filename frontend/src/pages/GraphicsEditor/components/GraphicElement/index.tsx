@@ -168,13 +168,38 @@ const GraphicElement: React.FC<GraphicElementProps> = ({
     return elements;
   };
 
-  // 获取元素模板
-  const template = getTemplate(element.type);
-  
+  // 获取元素模板 - 优先用 templateId，否则用 type
+  const template = element.templateId ? getTemplate(element.templateId) : getTemplate(element.type);
+
+  // 根据 templateId 推断变体类型
+  const getVariant = () => {
+    const tid = element.templateId || '';
+    if (tid.includes('centrifugal')) return 'centrifugal';
+    if (tid.includes('gear')) return 'gear';
+    if (tid.includes('ball')) return 'ball';
+    if (tid.includes('gate')) return 'gate';
+    if (tid.includes('check')) return 'check';
+    if (tid.includes('reactor')) return 'reactor';
+    if (tid.includes('storage')) return 'storage';
+    return undefined;
+  };
+
+  // 根据 templateId 推断仪表类型
+  const getSensorType = (): 'temperature' | 'pressure' | 'humidity' | 'level' | 'flow' | 'generic' => {
+    const tid = element.templateId || '';
+    if (tid.includes('temperature')) return 'temperature';
+    if (tid.includes('pressure')) return 'pressure';
+    if (tid.includes('flow')) return 'flow';
+    if (tid.includes('level')) return 'level';
+    return 'generic';
+  };
+
   // 渲染元素内容
   const renderContent = () => {
     // 使用优化后的符号组件
     // 注意：符号组件使用中心定位，需要将 x/y 设置为元素尺寸的一半
+    // 重要：isMonitorMode 设为 true 以禁用符号组件内部的拖拽功能
+    // 拖拽由外层 GraphicElement 的 Group 统一处理，避免双重拖拽导致元素重复
     const symbolProps = {
       id: element.id,
       x: element.size.width / 2,  // 中心点 X
@@ -186,24 +211,26 @@ const GraphicElement: React.FC<GraphicElementProps> = ({
       deviceData: element.properties?.deviceData,
       showLabel: false, // 在编辑模式下不显示标签，由 GraphicElement 统一处理
       hasAlarm: element.properties?.hasAlarm || false,
-      isMonitorMode: false,
+      isMonitorMode: true, // 设为 true 禁用符号组件内部拖拽，避免与外层拖拽冲突
       isSelected: false,
       onSelect: undefined,
       onChange: undefined,
     };
+
+    const variant = getVariant();
 
     // 根据元素类型选择符号组件
     switch (element.type) {
       case 'motor':
         return <Motor {...symbolProps} />;
       case 'pump':
-        return <Pump {...symbolProps} />;
+        return <Pump {...symbolProps} variant={variant as 'centrifugal' | 'gear'} />;
       case 'valve':
-        return <Valve {...symbolProps} />;
+        return <Valve {...symbolProps} variant={variant as 'ball' | 'gate' | 'check'} />;
       case 'tank':
-        return <Tank {...symbolProps} />;
+        return <Tank {...symbolProps} variant={variant as 'storage' | 'reactor'} />;
       case 'instrument':
-        return <Sensor {...symbolProps} sensorType="generic" />;
+        return <Sensor {...symbolProps} sensorType={getSensorType()} />;
       case 'pipe':
         return <Pipe
           {...symbolProps}
@@ -335,17 +362,38 @@ const GraphicElement: React.FC<GraphicElementProps> = ({
       {/* 连接点 */}
       {renderPorts()}
       
-      {/* 元素名称标签 */}
+      {/* 元素名称标签 - 带背景的样式化标签 */}
       {element.name && (
-        <Text
-          x={0}
-          y={element.size.height + 5}
-          text={element.name}
-          fontSize={12}
-          fill="#666"
-          align="center"
-          width={element.size.width}
-        />
+        <Group x={element.size.width / 2} y={element.size.height + 15}>
+          {/* 标签背景 */}
+          <Rect
+            x={-45}
+            y={-12}
+            width={90}
+            height={24}
+            fill="white"
+            stroke="#d9d9d9"
+            strokeWidth={1}
+            cornerRadius={4}
+            shadowColor="#000"
+            shadowBlur={4}
+            shadowOpacity={0.1}
+            shadowOffsetY={2}
+          />
+          {/* 标签文字 */}
+          <Text
+            x={-45}
+            y={-12}
+            width={90}
+            height={24}
+            text={element.name}
+            fontSize={12}
+            fontFamily="Arial"
+            align="center"
+            verticalAlign="middle"
+            fill="#333"
+          />
+        </Group>
       )}
     </Group>
   );

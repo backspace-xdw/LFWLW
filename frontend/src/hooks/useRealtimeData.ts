@@ -117,9 +117,22 @@ export function useMonitorData() {
   const [realtimeData, setRealtimeData] = useState<DeviceData[]>([])
   const [alarms, setAlarms] = useState<any[]>([])
 
+  // 初始加载历史告警
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    fetch('/api/v1/alarms/active', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(body => {
+        if (body.code === 0 && Array.isArray(body.data)) {
+          setAlarms(body.data.slice(0, 50))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   useEffect(() => {
     const socket = socketService.connect()
-    
+
     // 订阅监控数据
     socketService.subscribeMonitor()
     socketService.subscribeAlarms()

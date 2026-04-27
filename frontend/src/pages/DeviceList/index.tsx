@@ -70,101 +70,38 @@ const DeviceList: React.FC = () => {
     loadDevices()
   }, [searchParams])
 
+  const typeDisplayNames: Record<string, string> = {
+    pump: '离心泵', valve: '电动阀门', sensor: '温度传感器', motor: '三相电机', tank: '储罐',
+  }
+
   const loadDevices = async () => {
     try {
       setLoading(true)
-      // Mock data - replace with actual API call
-      const mockDevices: Device[] = [
-        {
-          id: '1',
-          deviceId: 'PUMP_001',
-          name: '离心泵 #001',
-          type: { id: '1', name: 'pump', displayName: '离心泵', category: 'pump' },
-          model: 'CP-2000',
-          status: 'online',
-          location: { building: 'A栋', floor: '1F', area: '泵房' },
-          lastOnlineAt: '2024-01-20T10:30:00Z',
-          properties: { power: 15, flow: 150 },
+      const res = await deviceService.getDeviceList({
+        page: searchParams.page,
+        pageSize: searchParams.pageSize,
+        keyword: searchParams.keyword || undefined,
+        status: searchParams.status || undefined,
+      })
+      const body = res.data
+      if (body.code === 0) {
+        const items: Device[] = body.data.items.map((item: any) => ({
+          id: item.deviceId,
+          deviceId: item.deviceId,
+          name: item.name,
+          type: { id: item.type, name: item.type, displayName: typeDisplayNames[item.type] || item.type, category: item.type },
+          model: item.model || '',
+          status: item.status,
+          location: { building: item.location || '', floor: '', area: '' },
+          lastOnlineAt: item.lastSeen ? new Date(item.lastSeen).toISOString() : undefined,
+          properties: { manufacturer: item.manufacturer },
           metadata: {},
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-20T10:30:00Z',
-        },
-        {
-          id: '2',
-          deviceId: 'VALVE_002',
-          name: '电动阀门 #002',
-          type: { id: '2', name: 'valve', displayName: '电动阀门', category: 'valve' },
-          model: 'EV-100',
-          status: 'online',
-          location: { building: 'A栋', floor: '1F', area: '管道区' },
-          lastOnlineAt: '2024-01-20T10:28:00Z',
-          properties: { diameter: 100, pressure: 10 },
-          metadata: {},
-          createdAt: '2024-01-02T00:00:00Z',
-          updatedAt: '2024-01-20T10:28:00Z',
-        },
-        {
-          id: '3',
-          deviceId: 'SENSOR_003',
-          name: '温度传感器 #003',
-          type: { id: '3', name: 'sensor', displayName: '温度传感器', category: 'sensor' },
-          model: 'TS-500',
-          status: 'offline',
-          location: { building: 'B栋', floor: '2F', area: '储罐区' },
-          lastOnlineAt: '2024-01-19T18:00:00Z',
-          properties: { range: '-50~200', accuracy: 0.1 },
-          metadata: {},
-          createdAt: '2024-01-03T00:00:00Z',
-          updatedAt: '2024-01-19T18:00:00Z',
-        },
-        {
-          id: '4',
-          deviceId: 'MOTOR_004',
-          name: '三相电机 #004',
-          type: { id: '4', name: 'motor', displayName: '三相电机', category: 'motor' },
-          model: 'M3-15KW',
-          status: 'maintenance',
-          location: { building: 'A栋', floor: '1F', area: '动力室' },
-          lastOnlineAt: '2024-01-18T14:00:00Z',
-          properties: { power: 15, voltage: 380, current: 30 },
-          metadata: {},
-          createdAt: '2024-01-04T00:00:00Z',
-          updatedAt: '2024-01-18T14:00:00Z',
-        },
-        {
-          id: '5',
-          deviceId: 'TANK_005',
-          name: '储罐 #005',
-          type: { id: '5', name: 'tank', displayName: '储罐', category: 'tank' },
-          model: 'ST-5000',
-          status: 'fault',
-          location: { building: 'C栋', floor: '1F', area: '储存区' },
-          lastOnlineAt: '2024-01-20T09:00:00Z',
-          properties: { capacity: 5000, material: '不锈钢' },
-          metadata: {},
-          createdAt: '2024-01-05T00:00:00Z',
-          updatedAt: '2024-01-20T09:00:00Z',
-        },
-      ]
-      
-      // Filter by keyword
-      let filteredDevices = mockDevices
-      if (searchParams.keyword) {
-        filteredDevices = filteredDevices.filter(device =>
-          device.name.includes(searchParams.keyword) ||
-          device.deviceId.includes(searchParams.keyword)
-        )
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }))
+        setDevices(items)
+        setTotal(body.data.total)
       }
-      
-      // Filter by status
-      if (searchParams.status) {
-        filteredDevices = filteredDevices.filter(device =>
-          device.status === searchParams.status
-        )
-      }
-      
-      setDevices(filteredDevices)
-      setTotal(filteredDevices.length)
     } catch (error) {
       message.error('加载设备列表失败')
     } finally {

@@ -28,6 +28,7 @@ export interface SignalConfig {
 export class SignalGenerator extends EventEmitter {
   private timers: Map<string, NodeJS.Timeout> = new Map()
   private configs: Map<string, Record<string, SignalConfig>> = new Map()
+  private latestData: Map<string, DeviceSignal> = new Map()
   
   constructor() {
     super()
@@ -126,6 +127,9 @@ export class SignalGenerator extends EventEmitter {
         data,
       }
 
+      // 缓存最新数据
+      this.latestData.set(deviceId, signal)
+
       // 发送数据事件
       this.emit('data', signal)
       this.emit(`device:${deviceId}`, signal)
@@ -208,6 +212,22 @@ export class SignalGenerator extends EventEmitter {
       timestamp: Date.now(),
       data,
     }
+  }
+
+  // 获取设备最新数据
+  getLatestData(deviceId: string): DeviceSignal | null {
+    return this.latestData.get(deviceId) || this.getDeviceStatus(deviceId)
+  }
+
+  // 获取设备参数名列表
+  getDeviceParameterNames(deviceId: string): string[] {
+    const cfg = this.configs.get(deviceId)
+    return cfg ? Object.keys(cfg) : []
+  }
+
+  // 获取所有已配置的设备ID
+  getConfiguredDeviceIds(): string[] {
+    return Array.from(this.configs.keys())
   }
 }
 

@@ -9,6 +9,7 @@ interface TankProps {
   width: number
   height: number
   rotation?: number
+  variant?: 'storage' | 'reactor'
   deviceId?: string
   deviceData?: any
   showLabel?: boolean
@@ -26,6 +27,7 @@ const Tank: React.FC<TankProps> = ({
   width,
   height,
   rotation = 0,
+  variant = 'storage',
   deviceId,
   deviceData,
   showLabel = true,
@@ -103,9 +105,13 @@ const Tank: React.FC<TankProps> = ({
 
   // 获取罐体颜色
   const getTankColor = () => {
-    if (!deviceData) return { main: '#e8e8e8', light: '#f5f5f5', dark: '#d9d9d9' }
+    if (!deviceData) {
+      if (variant === 'reactor') return { main: '#ffe0e0', light: '#fff1f0', dark: '#ffccc7' }
+      return { main: '#e8e8e8', light: '#f5f5f5', dark: '#d9d9d9' }
+    }
     if (deviceData.status === 'offline') return { main: '#bfbfbf', light: '#d9d9d9', dark: '#8c8c8c' }
     if (hasAlarm) return { main: '#fff1f0', light: '#fff7e6', dark: '#ffccc7' }
+    if (variant === 'reactor') return { main: '#ffe0e0', light: '#fff1f0', dark: '#ffccc7' }
     return { main: '#e8e8e8', light: '#f5f5f5', dark: '#d9d9d9' }
   }
 
@@ -136,10 +142,9 @@ const Tank: React.FC<TankProps> = ({
       x={x}
       y={y}
       rotation={rotation}
-      draggable={!isMonitorMode}
+      draggable={false}
       onClick={handleClick}
       onTap={handleClick}
-      onDragEnd={handleDragEnd}
     >
       {/* 选中边框 */}
       {isSelected && (
@@ -200,8 +205,10 @@ const Tank: React.FC<TankProps> = ({
         radiusY={12}
         fillLinearGradientStartPoint={{ x: 0, y: -12 }}
         fillLinearGradientEndPoint={{ x: 0, y: 12 }}
-        fillLinearGradientColorStops={[0, '#999', 0.3, '#ccc', 0.7, '#aaa', 1, '#888']}
-        stroke="#666"
+        fillLinearGradientColorStops={variant === 'reactor'
+          ? [0, '#d4756b', 0.3, '#e8a09a', 0.7, '#d4756b', 1, '#c45a50']
+          : [0, '#999', 0.3, '#ccc', 0.7, '#aaa', 1, '#888']}
+        stroke={variant === 'reactor' ? '#cf1322' : '#666'}
         strokeWidth={1}
       />
 
@@ -213,8 +220,10 @@ const Tank: React.FC<TankProps> = ({
         radiusY={8}
         fillLinearGradientStartPoint={{ x: 0, y: -8 }}
         fillLinearGradientEndPoint={{ x: 0, y: 8 }}
-        fillLinearGradientColorStops={[0, '#888', 0.5, '#aaa', 1, '#777']}
-        stroke="#666"
+        fillLinearGradientColorStops={variant === 'reactor'
+          ? [0, '#c45a50', 0.5, '#d4756b', 1, '#b8463c']
+          : [0, '#888', 0.5, '#aaa', 1, '#777']}
+        stroke={variant === 'reactor' ? '#cf1322' : '#666'}
         strokeWidth={1}
       />
 
@@ -341,15 +350,45 @@ const Tank: React.FC<TankProps> = ({
         />
       </Group>
 
-      {/* T标记 */}
+      {/* 反应器搅拌轴和叶片 */}
+      {variant === 'reactor' && (
+        <Group>
+          {/* 搅拌电机 */}
+          <Rect x={-8} y={-h / 2 - 22} width={16} height={14}
+            fillLinearGradientStartPoint={{ x: 0, y: 0 }} fillLinearGradientEndPoint={{ x: 16, y: 0 }}
+            fillLinearGradientColorStops={[0, '#888', 0.5, '#aaa', 1, '#777']}
+            stroke="#555" strokeWidth={1} cornerRadius={2} />
+          {/* 搅拌轴 */}
+          <Rect x={-2} y={-h / 2 - 8} width={4} height={h * 0.7}
+            fillLinearGradientStartPoint={{ x: 0, y: 0 }} fillLinearGradientEndPoint={{ x: 4, y: 0 }}
+            fillLinearGradientColorStops={[0, '#999', 0.5, '#bbb', 1, '#888']}
+            stroke="#666" strokeWidth={0.5} />
+          {/* 上叶片 */}
+          <Line points={[-w * 0.25, h * 0.05, w * 0.25, h * 0.05]}
+            stroke="#cf1322" strokeWidth={3} />
+          <Line points={[-w * 0.22, h * 0.05, -w * 0.18, -h * 0.02]}
+            stroke="#cf1322" strokeWidth={2} />
+          <Line points={[w * 0.22, h * 0.05, w * 0.18, -h * 0.02]}
+            stroke="#cf1322" strokeWidth={2} />
+          {/* 下叶片 */}
+          <Line points={[-w * 0.2, h * 0.2, w * 0.2, h * 0.2]}
+            stroke="#cf1322" strokeWidth={3} />
+          <Line points={[-w * 0.17, h * 0.2, -w * 0.13, h * 0.13]}
+            stroke="#cf1322" strokeWidth={2} />
+          <Line points={[w * 0.17, h * 0.2, w * 0.13, h * 0.13]}
+            stroke="#cf1322" strokeWidth={2} />
+        </Group>
+      )}
+
+      {/* 标记 - T(储罐) 或 R(反应器) */}
       <Text
         x={w / 2 - 25}
         y={-h / 2 + 20}
-        text="T"
+        text={variant === 'reactor' ? 'R' : 'T'}
         fontSize={Math.min(w, h) * 0.2}
         fontStyle="bold"
         fontFamily="Arial"
-        fill="#666"
+        fill={variant === 'reactor' ? '#cf1322' : '#666'}
       />
 
       {/* 中心液位显示 */}

@@ -6,19 +6,29 @@ import alarmRoutes from './alarm.routes'
 import userRoutes from './user.routes'
 import alarmRulesRoutes from './alarmRules'
 import analysisRoutes from './analysis.routes'
+import sceneRoutes from './scene.routes'
+import digitalFactoryRoutes from './digital-factory.routes'
+import instrumentRoutes from './instrument.routes'
+import alarmHandlingRoutes from './alarmHandling.routes'
+import riskWarningRoutes from './riskWarning.routes'
 
 const router = Router()
 
 // Public routes
 router.use('/auth', authRoutes)
 
-// Protected routes (add auth middleware later)
+// Protected routes
 router.use('/devices', deviceRoutes)
 router.use('/data', dataRoutes)
 router.use('/alarms', alarmRoutes)
 router.use('/users', userRoutes)
 router.use('/alarm-rules', alarmRulesRoutes)
 router.use('/analysis', analysisRoutes)
+router.use('/scenes', sceneRoutes)
+router.use('/digital-factory', digitalFactoryRoutes)
+router.use('/instruments', instrumentRoutes)
+router.use('/alarm-handling', alarmHandlingRoutes)
+router.use('/risk-warning', riskWarningRoutes)
 
 // Default route
 router.get('/', (req, res) => {

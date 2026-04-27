@@ -2,6 +2,7 @@ import { Server } from 'socket.io'
 import { signalGenerator, DeviceSignal } from './signalGenerator'
 import { logger } from '../utils/logger'
 import { alarmRuleManager } from './alarmRules'
+// alarm creation now handled by instrument threshold model
 
 export class DataSimulator {
   private io: Server
@@ -69,24 +70,19 @@ export class DataSimulator {
     return intervals[deviceId] || 5000
   }
 
-  // 检查告警条件
+  // 检查告警条件（告警现已由仪表模型阈值自动生成）
   private checkAlarmConditions(signal: DeviceSignal) {
     const { deviceId, data, timestamp } = signal
-    
+
     // 使用告警规则管理器检查每个参数
     Object.entries(data).forEach(([parameter, value]) => {
       if (typeof value === 'number') {
         const alarms = alarmRuleManager.checkAlarms(deviceId, parameter, value, timestamp)
-        
-        // 发送告警
+
+        // 发送到WebSocket客户端
         alarms.forEach(alarm => {
-          // 发送到所有订阅告警的客户端
           this.io.to('alarms:all').emit('alarm:new', alarm)
-          
-          // 根据严重级别发送
           this.io.to(`alarms:${alarm.severity}`).emit('alarm:new', alarm)
-          
-          // 记录告警日志
           logger.info(`New alarm: ${alarm.severity} - ${alarm.message}`)
         })
       }
@@ -124,68 +120,6 @@ export class DataSimulator {
       this.io.emit('device:status', statusUpdate)
     }, 60000)
 
-    // 模拟车辆位置更新（每5秒）
-    this.startVehicleSimulation()
-  }
-
-  // 模拟车辆位置数据
-  private startVehicleSimulation() {
-    const vehicles = [
-      { 
-        id: 'v1', 
-        lng: 116.404, 
-        lat: 39.915, 
-        speed: 45,
-        baseSpeed: 45,
-        direction: 90 
-      },
-      { 
-        id: 'v2', 
-        lng: 116.407, 
-        lat: 39.904, 
-        speed: 0,
-        baseSpeed: 0,
-        direction: 180 
-      }
-    ]
-    
-    setInterval(() => {
-      vehicles.forEach(vehicle => {
-        // 随机移动车辆位置
-        if (vehicle.baseSpeed > 0) {
-          // 模拟车辆移动
-          const speedVariation = (Math.random() - 0.5) * 10
-          vehicle.speed = Math.max(0, vehicle.baseSpeed + speedVariation)
-          
-          if (vehicle.speed > 0) {
-            // 根据方向移动
-            const distance = vehicle.speed / 3600 / 200 // 简化的距离计算
-            const directionRad = (vehicle.direction * Math.PI) / 180
-            
-            vehicle.lng += distance * Math.cos(directionRad)
-            vehicle.lat += distance * Math.sin(directionRad)
-            
-            // 随机改变方向
-            vehicle.direction = (vehicle.direction + (Math.random() - 0.5) * 10 + 360) % 360
-          }
-        }
-        
-        const locationData = {
-          vehicleId: vehicle.id,
-          location: {
-            longitude: vehicle.lng,
-            latitude: vehicle.lat,
-            speed: Math.round(vehicle.speed),
-            direction: Math.round(vehicle.direction),
-            updateTime: new Date().toISOString()
-          }
-        }
-        
-        // 发送车辆位置更新
-        this.io.emit('vehicle-location', locationData)
-        logger.info(`Vehicle ${vehicle.id} location update: ${vehicle.lng.toFixed(6)}, ${vehicle.lat.toFixed(6)}`)
-      })
-    }, 5000)
   }
 
   // 处理客户端命令

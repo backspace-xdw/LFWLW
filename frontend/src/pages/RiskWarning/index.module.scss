@@ -1,0 +1,319 @@
+.riskWarning {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f5f7fa;
+  font-size: 14px;
+  overflow: auto;
+
+  .topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .summaryRow {
+    margin-bottom: 0;
+
+    :global(.ant-card) {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    :global(.ant-statistic-title) {
+      font-size: 15px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    :global(.ant-statistic-content-value) {
+      font-size: 28px;
+      font-weight: 700;
+    }
+  }
+
+  .overallCard {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    text-align: center;
+    height: 100%;
+
+    .overallTitle {
+      font-size: 15px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .overallScore {
+      font-size: 42px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .overallLevel {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+  }
+
+  .statCard {
+    transition: all 0.3s;
+    cursor: pointer;
+    border: 2px solid transparent;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    &.statSafe:hover, &.statSafe:global(.ant-card-hoverable):hover {
+      border-color: rgba(82, 196, 26, 0.3);
+    }
+
+    &.statWatch:hover, &.statWatch:global(.ant-card-hoverable):hover {
+      border-color: rgba(250, 173, 20, 0.3);
+    }
+
+    &.statWarning:hover, &.statWarning:global(.ant-card-hoverable):hover {
+      border-color: rgba(250, 140, 22, 0.3);
+    }
+
+    &.statDanger:hover, &.statDanger:global(.ant-card-hoverable):hover {
+      border-color: rgba(255, 77, 79, 0.3);
+    }
+  }
+
+  .distributionCard {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    height: 100%;
+
+    :global(.ant-card-head) {
+      min-height: 40px;
+      padding: 0 16px;
+    }
+
+    :global(.ant-card-head-title) {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 0;
+    }
+
+    :global(.ant-card-body) {
+      padding: 0 8px 8px;
+    }
+  }
+
+  .chartsRow {
+    display: flex;
+    gap: 12px;
+
+    @media (max-width: 992px) {
+      flex-direction: column;
+    }
+
+    .radarCard {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      flex: 1;
+      min-width: 0;
+
+      :global(.ant-card-head-title) {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      :global(.ant-card-body) {
+        padding: 12px;
+      }
+    }
+
+    .trendCard {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      flex: 1;
+      min-width: 0;
+
+      :global(.ant-card-head-title) {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      :global(.ant-card-body) {
+        padding: 12px;
+      }
+    }
+  }
+
+  .factorAnalysis {
+    .factorCharts {
+      display: flex;
+      gap: 8px;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+
+      > div {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+  }
+
+  .heatmapCard {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    :global(.ant-card-head-title) {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    :global(.ant-card-body) {
+      padding: 16px;
+    }
+  }
+
+  .heatmapGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .riskItem {
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid #e8e8e8;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+
+    &.selected {
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    }
+
+    &.safe {
+      border-left: 4px solid #52c41a;
+    }
+
+    &.watch {
+      border-left: 4px solid #faad14;
+    }
+
+    &.warning {
+      border-left: 4px solid #fa8c16;
+    }
+
+    &.danger {
+      border-left: 4px solid #ff4d4f;
+      animation: dangerPulse 2s ease-in-out infinite;
+    }
+
+    .riskItemHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      .instrumentId {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1d2129;
+      }
+    }
+
+    .riskItemBody {
+      .location {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .valueRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        color: #999;
+        margin-bottom: 8px;
+
+        .currentValue {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1d2129;
+        }
+      }
+    }
+
+    .riskScore {
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+  }
+
+  .detailCard {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    :global(.ant-card-head-title) {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    :global(.ant-card-body) {
+      padding: 16px;
+    }
+
+    :global(.ant-table-thead > tr > th) {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1d2129;
+      background: #f2f3f5;
+      padding: 10px 12px;
+    }
+
+    :global(.ant-table-tbody > tr > td) {
+      font-size: 14px;
+      color: #1d2129;
+      padding: 10px 12px;
+    }
+
+    :global(.ant-tag) {
+      font-size: 13px;
+      padding: 2px 8px;
+    }
+  }
+
+  .dangerRow {
+    background: #fff1f0 !important;
+  }
+
+  .warningRow {
+    background: #fff7e6 !important;
+  }
+}
+
+@keyframes dangerPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.1); }
+  50% { box-shadow: 0 0 12px 2px rgba(255, 77, 79, 0.25); }
+}

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Stage, Layer } from 'react-konva';
-import { Layout, Menu, Button, Space, Tooltip, Divider, message } from 'antd';
+import { Layout, Button, Space, Tooltip, Divider, message, Modal, List } from 'antd';
 import {
   SelectOutlined,
   DragOutlined,
@@ -20,15 +20,12 @@ import {
 } from '@ant-design/icons';
 import Konva from 'konva';
 import { useEditorStore } from './store/editorStore';
-import ToolPanel from './components/ToolPanel';
 import ElementLibrary from './components/ElementLibrary';
 import PropertyPanel from './components/PropertyPanel';
 import GridBackground from './components/GridBackground';
 import GraphicElement from './components/GraphicElement';
 import DataPanel from './components/DataPanel';
-import { EditorMode, GraphicElement as GraphicElementType, ElementTemplate, DataBinding } from './types';
-import { getTemplate } from './templates';
-import { dataSimulator } from './utils/dataSimulator';
+import { EditorMode, GraphicElement as GraphicElementType, DataBinding, ElementTemplate, PropertyDefinition } from './types';
 import { DataBindingEngine } from './utils/dataBindingEngine';
 import styles from './index.module.scss';
 
@@ -42,14 +39,24 @@ const GraphicsEditor: React.FC = () => {
   const [showDataPanel, setShowDataPanel] = useState(false);
   const dataBindingEngineRef = useRef<DataBindingEngine | null>(null);
   
+  const [currentSceneId, setCurrentSceneId] = useState<string | null>(null);
+  const [currentSceneName, setCurrentSceneName] = useState('未命名场景');
+  const [sceneListVisible, setSceneListVisible] = useState(false);
+  const [sceneList, setSceneList] = useState<any[]>([]);
+
   const {
     elements,
+    connections,
     selectedIds,
+    clipboard,
     scale,
     addElement,
     updateElement,
+    updateElementSilent,
     deleteElements,
     clearAll,
+    copyElements,
+    pasteElements,
     selectElement,
     clearSelection,
     setScale,
@@ -59,10 +66,10 @@ const GraphicsEditor: React.FC = () => {
     canRedo,
   } = useEditorStore();
 
-  // 初始化数据绑定引擎
+  // 初始化数据绑定引擎（使用 silent 更新避免污染历史记录）
   useEffect(() => {
     dataBindingEngineRef.current = new DataBindingEngine((elementId, updates) => {
-      updateElement(elementId, updates);
+      updateElementSilent(elementId, updates);
     });
 
     return () => {
@@ -107,13 +114,25 @@ const GraphicsEditor: React.FC = () => {
         redo();
       }
       
+      // Ctrl+C 复制
+      if (e.ctrlKey && e.key === 'c' && selectedIds.length > 0) {
+        e.preventDefault();
+        copyElements(selectedIds);
+      }
+
+      // Ctrl+V 粘贴
+      if (e.ctrlKey && e.key === 'v') {
+        e.preventDefault();
+        pasteElements();
+      }
+
       // Ctrl+A 全选
       if (e.ctrlKey && e.key === 'a') {
         e.preventDefault();
         const allIds = elements.map(el => el.id);
         selectElement(allIds, false);
       }
-      
+
       // Esc 清除选择
       if (e.key === 'Escape') {
         clearSelection();
@@ -122,7 +141,7 @@ const GraphicsEditor: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, elements, deleteElements, undo, redo, selectElement, clearSelection]);
+  }, [selectedIds, elements, deleteElements, undo, redo, selectElement, clearSelection, copyElements, pasteElements]);
 
   // 处理画布点击
   const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -187,6 +206,7 @@ const GraphicsEditor: React.FC = () => {
     // 创建新元素
     const newElement: GraphicElementType = {
       id: `element_${Date.now()}`,
+      templateId: template.id,
       type: template.type,
       category: template.category,
       name: template.name,
@@ -202,7 +222,7 @@ const GraphicsEditor: React.FC = () => {
         strokeWidth: 1,
       },
       ports: template.ports,
-      properties: template.properties?.reduce((acc, prop) => {
+      properties: template.properties?.reduce((acc: Record<string, any>, prop: PropertyDefinition) => {
         acc[prop.name] = prop.defaultValue;
         return acc;
       }, {} as Record<string, any>),
@@ -247,63 +267,71 @@ const GraphicsEditor: React.FC = () => {
     setScale(1);
   };
 
-  // 保存图形
-  const handleSave = () => {
-    const data = {
-      elements,
-      connections: [], // TODO: 添加连接数据
-      version: '1.0.0',
-      timestamp: new Date().toISOString(),
-    };
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `diagram-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    message.success('图形已保存');
+  // 加载场景列表
+  useEffect(() => {
+    if (sceneListVisible) {
+      const token = localStorage.getItem('token');
+      fetch('/api/v1/scenes', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(json => { if (json.code === 0) setSceneList(json.data || []); })
+        .catch(() => {});
+    }
+  }, [sceneListVisible]);
+
+  // 保存图形（优先保存到服务端）
+  const handleSave = async () => {
+    const token = localStorage.getItem('token');
+    const payload = { name: currentSceneName, type: '2d', elements, connections };
+    try {
+      if (currentSceneId) {
+        await fetch(`/api/v1/scenes/${currentSceneId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        const res = await fetch('/api/v1/scenes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (json.code === 0) setCurrentSceneId(json.data.id);
+      }
+      message.success('图形已保存');
+    } catch {
+      // 降级：本地下载
+      const blob = new Blob([JSON.stringify({ elements, connections, version: '1.0.0' }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `diagram-${Date.now()}.json`; a.click();
+      URL.revokeObjectURL(url);
+      message.success('图形已保存（本地）');
+    }
   };
 
-  // 加载图形
-  const handleLoad = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+  // 打开场景浏览器
+  const handleLoad = () => setSceneListVisible(true);
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const data = JSON.parse(event.target?.result as string);
-          
-          // 验证数据格式
-          if (!data.elements || !Array.isArray(data.elements)) {
-            throw new Error('Invalid file format');
-          }
-
-          // 清空当前画布
-          clearAll();
-          
-          // 加载元素
-          data.elements.forEach((element: GraphicElementType) => {
-            addElement(element);
-          });
-
-          // TODO: 加载连接
-          
-          message.success('图形已加载');
-        } catch (error) {
-          message.error('加载失败：文件格式无效');
-          console.error('Load error:', error);
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
+  // 从服务端加载场景
+  const handleLoadScene = async (sceneId: string) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/v1/scenes/${sceneId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      if (json.code === 0 && json.data) {
+        clearAll();
+        (json.data.elements || []).forEach((el: GraphicElementType) => addElement(el));
+        setCurrentSceneId(sceneId);
+        setCurrentSceneName(json.data.name || '未命名场景');
+        setSceneListVisible(false);
+        message.success('场景已加载');
+      }
+    } catch {
+      message.error('加载场景失败');
+    }
   };
 
   // 导出为图片
@@ -329,7 +357,7 @@ const GraphicsEditor: React.FC = () => {
   };
 
   // 更新数据绑定
-  const handleDataBindingUpdate = (elementId: string, bindings: DataBinding[]) => {
+  const handleDataBindingUpdate = (_elementId: string, bindings: DataBinding[]) => {
     if (dataBindingEngineRef.current) {
       // 清除旧的绑定
       dataBindingEngineRef.current.clearBindings();
@@ -395,16 +423,18 @@ const GraphicsEditor: React.FC = () => {
                 onClick={() => deleteElements(selectedIds)}
               />
             </Tooltip>
-            <Tooltip title="复制">
+            <Tooltip title="复制 (Ctrl+C)">
               <Button
                 icon={<CopyOutlined />}
                 disabled={selectedIds.length === 0}
+                onClick={() => copyElements(selectedIds)}
               />
             </Tooltip>
-            <Tooltip title="剪切">
+            <Tooltip title="粘贴 (Ctrl+V)">
               <Button
                 icon={<ScissorOutlined />}
-                disabled={selectedIds.length === 0}
+                disabled={clipboard.length === 0}
+                onClick={() => pasteElements()}
               />
             </Tooltip>
           </Space>
@@ -512,6 +542,34 @@ const GraphicsEditor: React.FC = () => {
           </div>
         </Sider>
       </Layout>
+
+      {/* 场景浏览器 */}
+      <Modal
+        title="选择场景"
+        open={sceneListVisible}
+        onCancel={() => setSceneListVisible(false)}
+        footer={null}
+        width={480}
+      >
+        {sceneList.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 32, color: '#999' }}>暂无保存的场景</div>
+        ) : (
+          <List
+            dataSource={sceneList}
+            renderItem={(scene: any) => (
+              <List.Item
+                style={{ cursor: 'pointer' }}
+                onClick={() => handleLoadScene(scene.id)}
+              >
+                <List.Item.Meta
+                  title={scene.name}
+                  description={`类型：${scene.type} | 更新：${scene.updatedAt ? new Date(scene.updatedAt).toLocaleString() : '-'}`}
+                />
+              </List.Item>
+            )}
+          />
+        )}
+      </Modal>
     </Layout>
   );
 };

@@ -113,10 +113,9 @@ const Motor: React.FC<MotorProps> = ({
       x={x}
       y={y}
       rotation={rotation}
-      draggable={!isMonitorMode}
+      draggable={false}
       onClick={handleClick}
       onTap={handleClick}
-      onDragEnd={handleDragEnd}
     >
       {/* 选中边框 */}
       {isSelected && (

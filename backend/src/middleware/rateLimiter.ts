@@ -3,8 +3,8 @@ import { RateLimiterMemory } from 'rate-limiter-flexible'
 
 const rateLimiter = new RateLimiterMemory({
   keyPrefix: 'middleware',
-  points: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
-  duration: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000') / 1000, // convert to seconds
+  points: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000'),
+  duration: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000') / 1000, // convert to seconds
 })
 
 export const rateLimiterMiddleware = async (

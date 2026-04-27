@@ -143,10 +143,9 @@ const Sensor: React.FC<SensorProps> = ({
       x={x}
       y={y}
       rotation={rotation}
-      draggable={!isMonitorMode}
+      draggable={false}
       onClick={handleClick}
       onTap={handleClick}
-      onDragEnd={handleDragEnd}
     >
       {/* 选中边框 */}
       {isSelected && (

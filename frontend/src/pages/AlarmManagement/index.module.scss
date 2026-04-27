@@ -1,14 +1,87 @@
 .alarmManagement {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f5f7fa;
+  font-size: 14px;
+
   .statsRow {
-    margin-bottom: 16px;
+    margin-bottom: 0;
+
+    :global(.ant-card) {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    :global(.ant-statistic-title) {
+      font-size: 15px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    :global(.ant-statistic-content-value) {
+      font-size: 28px;
+      font-weight: 700;
+    }
   }
 
   .mainCard {
-    .filterBar {
-      margin-bottom: 16px;
+    flex: 1;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: auto;
+
+    :global(.ant-card-body) {
       padding: 16px;
-      background: #f5f5f5;
-      border-radius: 4px;
+    }
+
+    .filterBar {
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      background: #f5f7fa;
+      border-radius: 8px;
+
+      :global(.ant-input),
+      :global(.ant-select-selector),
+      :global(.ant-btn),
+      :global(.ant-picker) {
+        font-size: 14px;
+        height: 36px;
+      }
+    }
+
+    :global(.ant-table-thead > tr > th) {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1d2129;
+      background: #f2f3f5;
+      padding: 12px 12px;
+    }
+
+    :global(.ant-table-tbody > tr > td) {
+      font-size: 14px;
+      color: #1d2129;
+      padding: 12px 12px;
+      line-height: 1.6;
+    }
+
+    :global(.ant-tag) {
+      font-size: 13px;
+      padding: 2px 8px;
+    }
+
+    :global(.ant-pagination) {
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    :global(.ant-tabs-nav) {
+      margin-bottom: 12px;
+    }
+
+    :global(.ant-tabs-tab) {
+      font-size: 14px;
     }
   }
 
@@ -17,16 +90,16 @@
     animation: blink 2s infinite;
   }
 
+  .warningRow {
+    background-color: #fff7e6;
+  }
+
   @keyframes blink {
     0%, 100% { background-color: #fff1f0; }
     50% { background-color: #ffccc7; }
   }
 
   :global {
-    .ant-tabs-nav {
-      margin-bottom: 16px;
-    }
-
     .ant-badge {
       .ant-badge-count {
         font-size: 12px;
@@ -34,12 +107,6 @@
         line-height: 18px;
         min-width: 18px;
         padding: 0 6px;
-      }
-    }
-
-    .ant-table {
-      .ant-table-cell {
-        font-size: 13px;
       }
     }
 
@@ -51,47 +118,25 @@
       margin-bottom: 0;
 
       .ant-descriptions-item-label {
+        font-size: 14px;
         font-weight: 500;
-        color: #666;
+        color: #333;
+      }
+
+      .ant-descriptions-item-content {
+        font-size: 14px;
+        color: #1d2129;
       }
     }
 
     .ant-timeline {
       .ant-timeline-item {
         padding-bottom: 12px;
+        font-size: 14px;
 
         &:last-child {
           padding-bottom: 0;
         }
-      }
-    }
-
-    .ant-tag {
-      &.ant-tag-red {
-        border-color: #ffccc7;
-      }
-
-      &.ant-tag-orange {
-        border-color: #ffd591;
-      }
-
-      &.ant-tag-gold {
-        border-color: #ffe58f;
-      }
-
-      &.ant-tag-blue {
-        border-color: #91d5ff;
-      }
-    }
-
-    .ant-statistic {
-      .ant-statistic-title {
-        font-size: 14px;
-        color: #666;
-      }
-
-      .ant-statistic-content {
-        font-size: 24px;
       }
     }
   }

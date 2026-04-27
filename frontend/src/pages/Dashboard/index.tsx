@@ -31,50 +31,32 @@ interface AlarmStats {
 }
 
 const Dashboard: React.FC = () => {
-  console.log('Dashboard component rendering')
   const { connected, realtimeData, alarms } = useMonitorData()
-  console.log('Dashboard data:', { connected, realtimeDataLength: realtimeData?.length, alarmsLength: alarms?.length })
-  
-  const [deviceStats, setDeviceStats] = useState<DeviceStats>({
-    total: 0,
-    online: 0,
-    offline: 0,
-    fault: 0,
-  })
-  
-  const [alarmStats, setAlarmStats] = useState<AlarmStats>({
-    critical: 0,
-    high: 0,
-    medium: 0,
-    low: 0,
-  })
-  
+
+  const [deviceStats, setDeviceStats] = useState<DeviceStats>({ total: 0, online: 0, offline: 0, fault: 0 })
+  const [alarmStats, setAlarmStats] = useState<AlarmStats>({ critical: 0, high: 0, medium: 0, low: 0 })
   const [loading, setLoading] = useState(true)
-  const [gaugeData, setGaugeData] = useState({
-    temperature: 75.5,
-    pressure: 3.2,
-    flow: 125.8,
-  })
+  const [healthScore, setHealthScore] = useState(100)
+  const [selectedDeviceId, setSelectedDeviceId] = useState('PUMP_001')
+  const [gaugeData, setGaugeData] = useState({ temperature: 75.5, pressure: 3.2, flow: 125.8 })
 
   useEffect(() => {
     loadDashboardData()
   }, [])
 
-  // 更新仪表盘数据
+  // 更新仪表盘仪表数据
   useEffect(() => {
-    console.log('实时数据更新:', realtimeData.length, '条数据')
     if (realtimeData.length > 0) {
       const latestData = realtimeData[realtimeData.length - 1]
-      console.log('最新数据:', latestData)
-      if (latestData.deviceId === 'PUMP_001' && latestData.data) {
-        setGaugeData({
-          temperature: latestData.data.temperature || gaugeData.temperature,
-          pressure: latestData.data.pressure || gaugeData.pressure,
-          flow: latestData.data.flow || gaugeData.flow,
-        })
+      if (latestData.deviceId === selectedDeviceId && latestData.data) {
+        setGaugeData(prev => ({
+          temperature: latestData.data.temperature ?? prev.temperature,
+          pressure: latestData.data.pressure ?? prev.pressure,
+          flow: latestData.data.flow ?? prev.flow,
+        }))
       }
     }
-  }, [realtimeData])
+  }, [realtimeData, selectedDeviceId])
 
   // 更新告警统计
   useEffect(() => {
@@ -91,18 +73,17 @@ const Dashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true)
-      // 模拟数据加载
-      setTimeout(() => {
-        setDeviceStats({
-          total: 156,
-          online: 142,
-          offline: 10,
-          fault: 4,
-        })
-        setLoading(false)
-      }, 1000)
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error)
+      const res = await deviceService.getDeviceList({ pageSize: 1000 } as any)
+      const list: any[] = res?.data?.data?.items || []
+      const online = list.filter((d: any) => d.status === 'online').length
+      const offline = list.filter((d: any) => d.status === 'offline').length
+      const fault = list.filter((d: any) => d.status === 'fault').length
+      setDeviceStats({ total: list.length, online, offline, fault })
+      setHealthScore(list.length > 0 ? Math.round((online / list.length) * 100) : 100)
+      if (list.length > 0) setSelectedDeviceId(list[0].deviceId)
+    } catch {
+      // 静默降级
+    } finally {
       setLoading(false)
     }
   }
@@ -185,7 +166,7 @@ const Dashboard: React.FC = () => {
         type: 'line',
         smooth: true,
         data: realtimeData
-          .filter(d => d.deviceId === 'PUMP_001' && d.data.temperature !== undefined)
+          .filter(d => d.deviceId === selectedDeviceId && d.data.temperature !== undefined)
           .map(d => [d.timestamp, d.data.temperature]),
         itemStyle: { color: '#ff4d4f' },
       },
@@ -195,7 +176,7 @@ const Dashboard: React.FC = () => {
         smooth: true,
         yAxisIndex: 1,
         data: realtimeData
-          .filter(d => d.deviceId === 'PUMP_001' && d.data.pressure !== undefined)
+          .filter(d => d.deviceId === selectedDeviceId && d.data.pressure !== undefined)
           .map(d => [d.timestamp, d.data.pressure]),
         itemStyle: { color: '#1890ff' },
       },
@@ -204,7 +185,7 @@ const Dashboard: React.FC = () => {
         type: 'line',
         smooth: true,
         data: realtimeData
-          .filter(d => d.deviceId === 'PUMP_001' && d.data.flow !== undefined)
+          .filter(d => d.deviceId === selectedDeviceId && d.data.flow !== undefined)
           .map(d => [d.timestamp, d.data.flow]),
         itemStyle: { color: '#52c41a' },
       },
@@ -215,10 +196,10 @@ const Dashboard: React.FC = () => {
   const alarmColumns = [
     {
       title: '时间',
-      dataIndex: 'timestamp',
-      key: 'timestamp',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 160,
-      render: (ts: number) => new Date(ts).toLocaleTimeString(),
+      render: (t: string | number) => new Date(t).toLocaleTimeString(),
     },
     {
       title: '设备',
@@ -247,12 +228,6 @@ const Dashboard: React.FC = () => {
       key: 'message',
     },
   ]
-
-  // 添加错误边界
-  if (!styles) {
-    console.error('Dashboard styles not loaded')
-    return <div>Error: Styles not loaded</div>
-  }
 
   return (
     <div className={styles.dashboard}>
@@ -303,7 +278,7 @@ const Dashboard: React.FC = () => {
           <Card className={styles.statCard}>
             <Statistic
               title="活动告警"
-              value={alarmStats.critical + alarmStats.high}
+              value={alarmStats.critical + alarmStats.high + alarmStats.medium + alarmStats.low}
               prefix={<AlertOutlined />}
               valueStyle={{ color: '#ff4d4f' }}
             />
@@ -380,7 +355,7 @@ const Dashboard: React.FC = () => {
             <div className={styles.healthScore}>
               <Progress
                 type="circle"
-                percent={92}
+                percent={healthScore}
                 strokeColor={{
                   '0%': '#108ee9',
                   '100%': '#87d068',

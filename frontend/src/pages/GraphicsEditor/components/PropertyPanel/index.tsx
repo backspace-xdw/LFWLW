@@ -1,10 +1,8 @@
 import React from 'react';
-import { Form, Input, Select, InputNumber, Switch, Divider, Empty, Tabs } from 'antd';
-import { GraphicElement } from '../../types';
+import { Form, Input, InputNumber, Switch, Divider, Empty, Tabs } from 'antd';
+import { GraphicElement, DataBinding } from '../../types';
 import DataBindingPanel from './DataBindingPanel';
 import styles from './index.module.scss';
-
-const { Option } = Select;
 const { TabPane } = Tabs;
 
 interface PropertyPanelProps {

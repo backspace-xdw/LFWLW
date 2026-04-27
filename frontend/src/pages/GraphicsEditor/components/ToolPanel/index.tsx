@@ -6,7 +6,6 @@ import {
   LineOutlined,
   FontSizeOutlined,
   BorderOutlined,
-  BgColorsOutlined,
 } from '@ant-design/icons';
 import { EditorMode } from '../../types';
 import styles from './index.module.scss';

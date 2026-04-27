@@ -33,6 +33,10 @@ import styles from './index.module.scss'
 
 const { TabPane } = Tabs
 
+const typeDisplayNames: Record<string, string> = {
+  pump: '离心泵', valve: '电动阀门', sensor: '温度传感器', motor: '三相电机', tank: '储罐',
+}
+
 const DeviceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -40,6 +44,8 @@ const DeviceDetail: React.FC = () => {
   const [device, setDevice] = useState<Device | null>(null)
   const [activeTab, setActiveTab] = useState('realtime')
   const [controlModalVisible, setControlModalVisible] = useState(false)
+  const [realtimeStats, setRealtimeStats] = useState<Record<string, number>>({})
+  const [historyData, setHistoryData] = useState<{ temperature: any[]; pressure: any[]; flow: any[] }>({ temperature: [], pressure: [], flow: [] })
 
   useEffect(() => {
     if (id) {
@@ -50,32 +56,53 @@ const DeviceDetail: React.FC = () => {
   const loadDeviceDetail = async (deviceId: string) => {
     try {
       setLoading(true)
-      // Mock device detail - replace with actual API call
-      const mockDevice: Device = {
-        id: deviceId,
-        deviceId: 'PUMP_001',
-        name: '离心泵 #001',
-        type: { id: '1', name: 'pump', displayName: '离心泵', category: 'pump' },
-        model: 'CP-2000',
-        status: 'online',
-        location: { building: 'A栋', floor: '1F', area: '泵房' },
-        lastOnlineAt: '2024-01-20T10:30:00Z',
-        properties: { 
-          power: 15,
-          flow: 150,
-          manufacturer: '西门子',
-          installDate: '2023-06-15',
-          warrantyPeriod: '3年',
-        },
-        metadata: {},
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-20T10:30:00Z',
+      const res = await deviceService.getDevice(deviceId)
+      const body = res.data
+      if (body.code === 0) {
+        const raw = body.data
+        setDevice({
+          id: raw.deviceId,
+          deviceId: raw.deviceId,
+          name: raw.name,
+          type: { id: raw.type, name: raw.type, displayName: typeDisplayNames[raw.type] || raw.type, category: raw.type },
+          model: raw.model || '',
+          status: raw.status,
+          location: { building: raw.location || '' },
+          lastOnlineAt: raw.lastSeen ? new Date(raw.lastSeen).toISOString() : undefined,
+          properties: { manufacturer: raw.manufacturer, model: raw.model },
+          metadata: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+        if (raw.latestData) {
+          setRealtimeStats(raw.latestData)
+        }
+        loadHistory(raw.deviceId)
       }
-      setDevice(mockDevice)
-    } catch (error) {
-      console.error('Failed to load device detail:', error)
+    } catch {
+      // silent
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadHistory = async (deviceId: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`/api/v1/data/history/${deviceId}?limit=30`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const body = await res.json()
+      if (body.code === 0 && body.data?.history) {
+        const hist = body.data.history as Array<{ timestamp: number; data: Record<string, number> }>
+        setHistoryData({
+          temperature: hist.map(h => [new Date(h.timestamp), h.data.temperature ?? null]).filter(h => h[1] !== null),
+          pressure: hist.map(h => [new Date(h.timestamp), h.data.pressure ?? null]).filter(h => h[1] !== null),
+          flow: hist.map(h => [new Date(h.timestamp), h.data.flow ?? null]).filter(h => h[1] !== null),
+        })
+      }
+    } catch {
+      // silent
     }
   }
 
@@ -96,77 +123,18 @@ const DeviceDetail: React.FC = () => {
 
   // 实时数据图表配置
   const realtimeChartOption = {
-    tooltip: {
-      trigger: 'axis',
-    },
-    legend: {
-      data: ['温度', '压力', '流量'],
-    },
-    xAxis: {
-      type: 'time',
-      splitLine: {
-        show: false,
-      },
-    },
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['温度', '压力', '流量'] },
+    xAxis: { type: 'time', splitLine: { show: false } },
     yAxis: [
-      {
-        type: 'value',
-        name: '温度 (°C)',
-        position: 'left',
-      },
-      {
-        type: 'value',
-        name: '压力 (bar)',
-        position: 'right',
-      },
+      { type: 'value', name: '温度 (°C)', position: 'left' },
+      { type: 'value', name: '压力 (bar)', position: 'right' },
     ],
     series: [
-      {
-        name: '温度',
-        type: 'line',
-        smooth: true,
-        data: generateMockData('temperature'),
-        itemStyle: { color: '#ff4d4f' },
-      },
-      {
-        name: '压力',
-        type: 'line',
-        smooth: true,
-        yAxisIndex: 1,
-        data: generateMockData('pressure'),
-        itemStyle: { color: '#1890ff' },
-      },
-      {
-        name: '流量',
-        type: 'line',
-        smooth: true,
-        data: generateMockData('flow'),
-        itemStyle: { color: '#52c41a' },
-      },
+      { name: '温度', type: 'line', smooth: true, data: historyData.temperature, itemStyle: { color: '#ff4d4f' } },
+      { name: '压力', type: 'line', smooth: true, yAxisIndex: 1, data: historyData.pressure, itemStyle: { color: '#1890ff' } },
+      { name: '流量', type: 'line', smooth: true, data: historyData.flow, itemStyle: { color: '#52c41a' } },
     ],
-  }
-
-  // Generate mock time series data
-  function generateMockData(type: string) {
-    const now = Date.now()
-    const data = []
-    for (let i = 0; i < 20; i++) {
-      const time = new Date(now - (20 - i) * 60000)
-      let value = 0
-      switch (type) {
-        case 'temperature':
-          value = 70 + Math.random() * 10
-          break
-        case 'pressure':
-          value = 3 + Math.random() * 0.5
-          break
-        case 'flow':
-          value = 120 + Math.random() * 20
-          break
-      }
-      data.push([time, value.toFixed(2)])
-    }
-    return data
   }
 
   // 操作日志数据
@@ -277,7 +245,7 @@ const DeviceDetail: React.FC = () => {
           <Card>
             <Statistic
               title="当前温度"
-              value={75.5}
+              value={realtimeStats.temperature ?? '--'}
               suffix="°C"
               valueStyle={{ color: '#ff4d4f' }}
             />
@@ -287,7 +255,7 @@ const DeviceDetail: React.FC = () => {
           <Card>
             <Statistic
               title="当前压力"
-              value={3.2}
+              value={realtimeStats.pressure ?? '--'}
               suffix="bar"
               valueStyle={{ color: '#1890ff' }}
             />
@@ -296,9 +264,9 @@ const DeviceDetail: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="当前流量"
-              value={125.8}
-              suffix="m³/h"
+              title={device.type.name === 'tank' ? '当前液位' : '当前流量'}
+              value={realtimeStats.flow ?? realtimeStats.level ?? '--'}
+              suffix={device.type.name === 'tank' ? '%' : 'm³/h'}
               valueStyle={{ color: '#52c41a' }}
             />
           </Card>
@@ -306,9 +274,21 @@ const DeviceDetail: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="运行时长"
-              value={1245}
-              suffix="小时"
+              title={
+                ['pump', 'motor'].includes(device.type.name) ? '当前转速'
+                : device.type.name === 'sensor' ? '当前湿度'
+                : '当前振动'
+              }
+              value={
+                ['pump', 'motor'].includes(device.type.name) ? (realtimeStats.rpm ?? '--')
+                : device.type.name === 'sensor' ? (realtimeStats.humidity ?? '--')
+                : (realtimeStats.vibration ?? '--')
+              }
+              suffix={
+                ['pump', 'motor'].includes(device.type.name) ? 'rpm'
+                : device.type.name === 'sensor' ? '%RH'
+                : 'mm/s'
+              }
               valueStyle={{ color: '#722ed1' }}
             />
           </Card>
@@ -327,17 +307,14 @@ const DeviceDetail: React.FC = () => {
               <Descriptions.Item label="设备ID">{device.deviceId}</Descriptions.Item>
               <Descriptions.Item label="设备名称">{device.name}</Descriptions.Item>
               <Descriptions.Item label="设备类型">{device.type.displayName}</Descriptions.Item>
-              <Descriptions.Item label="设备型号">{device.model}</Descriptions.Item>
-              <Descriptions.Item label="制造商">{device.properties.manufacturer}</Descriptions.Item>
-              <Descriptions.Item label="安装日期">{device.properties.installDate}</Descriptions.Item>
-              <Descriptions.Item label="保修期">{device.properties.warrantyPeriod}</Descriptions.Item>
-              <Descriptions.Item label="额定功率">{device.properties.power} kW</Descriptions.Item>
-              <Descriptions.Item label="额定流量">{device.properties.flow} m³/h</Descriptions.Item>
-              <Descriptions.Item label="位置" span={2}>
-                {device.location?.building} {device.location?.floor} {device.location?.area}
+              <Descriptions.Item label="设备型号">{device.model || '-'}</Descriptions.Item>
+              <Descriptions.Item label="制造商">{device.properties.manufacturer || '-'}</Descriptions.Item>
+              <Descriptions.Item label="运行状态">{renderStatus(device.status)}</Descriptions.Item>
+              <Descriptions.Item label="安装位置" span={2}>
+                {device.location?.building || '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="创建时间">
-                {new Date(device.createdAt).toLocaleString()}
+              <Descriptions.Item label="最后上线">
+                {device.lastOnlineAt ? new Date(device.lastOnlineAt).toLocaleString() : '-'}
               </Descriptions.Item>
               <Descriptions.Item label="更新时间">
                 {new Date(device.updatedAt).toLocaleString()}

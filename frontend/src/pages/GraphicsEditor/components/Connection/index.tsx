@@ -13,7 +13,7 @@ const Connection: React.FC<ConnectionProps> = ({
   connection,
   isSelected,
   onSelect,
-  onDelete,
+  onDelete: _onDelete,
 }) => {
   // 计算正交路径
   const calculateOrthogonalPath = (points: { x: number; y: number }[]) => {

@@ -13,12 +13,14 @@ import DataAnalysis from './pages/DataAnalysis'
 import SystemSettings from './pages/SystemSettings'
 import UserManagement from './pages/UserManagement'
 import Model3D from './pages/Model3D'
-import VehicleMonitor from './pages/VehicleMonitor'
 import GraphicsEditor from './pages/GraphicsEditor'
 import Demo3D from './pages/Demo3D'
 import DigitalFactory from './pages/DigitalFactory'
 import FactoryArea from './pages/FactoryArea'
 import DeviceDetail3D from './pages/DeviceDetail3D'
+import InstrumentConfig from './pages/InstrumentConfig'
+import AlarmHandling from './pages/AlarmHandling'
+import RiskWarning from './pages/RiskWarning'
 import { useAuthStore } from './store/auth'
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -47,11 +49,13 @@ function App() {
             <Route path="devices/:id" element={<DeviceDetail />} />
             <Route path="monitor" element={<RealtimeMonitor />} />
             <Route path="gis" element={<GISMonitoring />} />
+            <Route path="instrument-config" element={<InstrumentConfig />} />
             <Route path="alarms" element={<AlarmManagement />} />
+            <Route path="alarm-handling" element={<AlarmHandling />} />
+            <Route path="risk-warning" element={<RiskWarning />} />
             <Route path="analysis" element={<DataAnalysis />} />
             <Route path="models" element={<Model3D />} />
             <Route path="graphics-editor" element={<GraphicsEditor />} />
-            <Route path="vehicle-monitor" element={<VehicleMonitor />} />
             <Route path="factory-area" element={<FactoryArea />} />
             <Route path="digital-factory" element={<DigitalFactory />} />
             <Route path="device-detail/:deviceId" element={<DeviceDetail3D />} />

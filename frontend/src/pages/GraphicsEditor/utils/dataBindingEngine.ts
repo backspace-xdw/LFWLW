@@ -1,5 +1,4 @@
 import { DataBinding, DataTransform, GraphicElement } from '../types';
-import { useEditorStore } from '../store/editorStore';
 
 export class DataBindingEngine {
   private bindings: Map<string, DataBinding[]> = new Map();

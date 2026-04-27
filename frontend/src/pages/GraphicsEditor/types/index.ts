@@ -58,6 +58,7 @@ export interface Port {
 // 图形元素
 export interface GraphicElement {
   id: string;
+  templateId?: string; // 具体模板ID，如 'pump_centrifugal', 'pump_gear' 等
   type: ElementType;
   category: ElementCategory;
   name: string;

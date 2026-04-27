@@ -60,6 +60,7 @@ temp/
 backend/backend_restart.log
 backend/uploads/
 backend/temp/
+backend/data/
 
 # Frontend specific
 frontend/.vite/

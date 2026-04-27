@@ -1,13 +1,12 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import { 
-  GraphicElement, 
-  Connection, 
-  DataBinding, 
+import {
+  GraphicElement,
+  Connection,
+  DataBinding,
   HistoryAction,
   Point,
-  ElementTemplate 
 } from '../types';
 
 interface EditorState {
@@ -15,42 +14,48 @@ interface EditorState {
   elements: GraphicElement[];
   connections: Connection[];
   dataBindings: DataBinding[];
-  
+
   // 选择状态
   selectedIds: string[];
   hoveredId: string | null;
-  
+
+  // 剪贴板
+  clipboard: GraphicElement[];
+
   // 编辑状态
   scale: number;
   offset: Point;
   gridEnabled: boolean;
   gridSize: number;
   snapToGrid: boolean;
-  
+
   // 历史记录
   history: HistoryAction[];
   historyIndex: number;
-  
+
   // 操作方法
   addElement: (element: GraphicElement) => void;
   updateElement: (id: string, updates: Partial<GraphicElement>) => void;
+  updateElementSilent: (id: string, updates: Partial<GraphicElement>) => void;
   deleteElements: (ids: string[]) => void;
   clearAll: () => void;
-  
+  copyElements: (ids: string[]) => void;
+  pasteElements: () => void;
+
   addConnection: (connection: Connection) => void;
   updateConnection: (id: string, updates: Partial<Connection>) => void;
   deleteConnection: (id: string) => void;
-  
+
   selectElement: (ids: string | string[], multi?: boolean) => void;
   clearSelection: () => void;
   setHovered: (id: string | null) => void;
-  
+
   setScale: (scale: number) => void;
   setOffset: (offset: Point) => void;
-  
+
   undo: () => void;
   redo: () => void;
-  
+
   // 计算属性
   canUndo: boolean;
   canRedo: boolean;
@@ -66,16 +71,17 @@ export const useEditorStore = create<EditorState>()(
       elements: [],
       connections: [],
       dataBindings: [],
-      
+
       selectedIds: [],
       hoveredId: null,
-      
+      clipboard: [],
+
       scale: 1,
       offset: { x: 0, y: 0 },
       gridEnabled: true,
       gridSize: 20,
       snapToGrid: true,
-      
+
       history: [],
       historyIndex: -1,
       
@@ -119,6 +125,40 @@ export const useEditorStore = create<EditorState>()(
         }
       }),
       
+      // 静默更新（不写入历史，用于数据绑定实时刷新）
+      updateElementSilent: (id, updates) => set((state) => {
+        const index = state.elements.findIndex(el => el.id === id);
+        if (index !== -1) {
+          Object.assign(state.elements[index], updates);
+        }
+      }),
+
+      // 复制到剪贴板
+      copyElements: (ids) => set((state) => {
+        state.clipboard = state.elements
+          .filter(el => ids.includes(el.id))
+          .map(el => JSON.parse(JSON.stringify(el)));
+      }),
+
+      // 从剪贴板粘贴
+      pasteElements: () => set((state) => {
+        if (state.clipboard.length === 0) return;
+        const newIds: string[] = [];
+        state.clipboard.forEach((el, i) => {
+          const newEl: GraphicElement = {
+            ...JSON.parse(JSON.stringify(el)),
+            id: `${el.type}_${Date.now()}_${i}`,
+            position: { x: el.position.x + 20, y: el.position.y + 20 },
+          };
+          state.elements.push(newEl);
+          newIds.push(newEl.id);
+          state.history = state.history.slice(0, state.historyIndex + 1);
+          state.history.push({ type: 'add', timestamp: Date.now(), data: { element: newEl } });
+          state.historyIndex++;
+        });
+        state.selectedIds = newIds;
+      }),
+
       deleteElements: (ids) => set((state) => {
         const deletedElements = state.elements.filter(el => ids.includes(el.id));
         state.elements = state.elements.filter(el => !ids.includes(el.id));
@@ -175,6 +215,7 @@ export const useEditorStore = create<EditorState>()(
         state.dataBindings = [];
         state.selectedIds = [];
         state.hoveredId = null;
+        state.clipboard = [];
         state.history = [];
         state.historyIndex = -1;
       }),
