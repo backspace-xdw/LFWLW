@@ -21,6 +21,7 @@ import {
   ToolOutlined,
   SolutionOutlined,
   ThunderboltOutlined,
+  ExperimentOutlined,
 } from '@ant-design/icons'
 import { useAuthStore } from '@/store/auth'
 import styles from './index.module.scss'
@@ -67,6 +68,11 @@ const menuItems = [
     key: 'risk-warning',
     icon: <ThunderboltOutlined />,
     label: '风险预警',
+  },
+  {
+    key: 'predictive-maintenance',
+    icon: <ExperimentOutlined />,
+    label: '预测性维护',
   },
   {
     key: 'analysis',

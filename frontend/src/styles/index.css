@@ -15,14 +15,65 @@ html, body, #root {
   overflow: hidden;
 }
 
-/* 全局样式 */
+/* 全局样式 - 增强字体清晰度 */
+html {
+  font-size: 15px;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
+    "Source Han Sans CN", "Noto Sans CJK SC", -apple-system, BlinkMacSystemFont,
+    'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1f2937;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* 标题字重略加粗，提升可读性 */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* 表格/列表内文本不要太细 */
+.ant-table,
+.ant-list,
+.ant-descriptions {
+  font-size: 15px;
+}
+
+/* 表格表头加重，区分更明显 */
+.ant-table-thead > tr > th {
+  font-weight: 600 !important;
+  font-size: 15px !important;
+}
+
+/* 菜单字体 */
+.ant-menu {
+  font-size: 15px !important;
+}
+
+/* 卡片标题更突出 */
+.ant-card-head-title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+/* 数字统计组件 */
+.ant-statistic-content {
+  font-feature-settings: "tnum" 1;
+}
+
+/* 标签 */
+.ant-tag {
+  font-size: 13px;
+  padding: 2px 8px;
+  line-height: 1.5;
 }
 
 /* 响应式容器 */

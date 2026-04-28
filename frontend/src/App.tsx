@@ -21,6 +21,7 @@ import DeviceDetail3D from './pages/DeviceDetail3D'
 import InstrumentConfig from './pages/InstrumentConfig'
 import AlarmHandling from './pages/AlarmHandling'
 import RiskWarning from './pages/RiskWarning'
+import PredictiveMaintenance from './pages/PredictiveMaintenance'
 import { useAuthStore } from './store/auth'
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -53,6 +54,7 @@ function App() {
             <Route path="alarms" element={<AlarmManagement />} />
             <Route path="alarm-handling" element={<AlarmHandling />} />
             <Route path="risk-warning" element={<RiskWarning />} />
+            <Route path="predictive-maintenance" element={<PredictiveMaintenance />} />
             <Route path="analysis" element={<DataAnalysis />} />
             <Route path="models" element={<Model3D />} />
             <Route path="graphics-editor" element={<GraphicsEditor />} />

@@ -11,6 +11,7 @@ import digitalFactoryRoutes from './digital-factory.routes'
 import instrumentRoutes from './instrument.routes'
 import alarmHandlingRoutes from './alarmHandling.routes'
 import riskWarningRoutes from './riskWarning.routes'
+import predictiveMaintenanceRoutes from './predictiveMaintenance.routes'
 
 const router = Router()
 
@@ -29,6 +30,7 @@ router.use('/digital-factory', digitalFactoryRoutes)
 router.use('/instruments', instrumentRoutes)
 router.use('/alarm-handling', alarmHandlingRoutes)
 router.use('/risk-warning', riskWarningRoutes)
+router.use('/predictive-maintenance', predictiveMaintenanceRoutes)
 
 // Default route
 router.get('/', (req, res) => {
